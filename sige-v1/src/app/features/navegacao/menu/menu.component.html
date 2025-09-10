@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Principal - SIGE</title>
+</head>
+<body>
+    <div class="menu-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo">
+                        <h1>SIGE</h1>
+                        <span>Sistema Integrado de Gestão Escolar</span>
+                    </div>
+                </div>
+                
+                <div class="user-section">
+                    <div class="user-info" *ngIf="usuarioLogado">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-details">
+                            <span class="user-name">{{ usuarioLogado.nome }}</span>
+                            <span class="user-role">{{ usuarioLogado.role | titlecase }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="header-actions">
+                        <button class="btn-icon" title="Notificações">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge" *ngIf="notificacoes > 0">{{ notificacoes }}</span>
+                        </button>
+                        
+                        <button class="btn-icon" title="Configurações">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        
+                        <button class="btn-logout" (click)="logout()" title="Sair">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sair</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar" [class.collapsed]="sidebarCollapsed">
+                <div class="sidebar-header">
+                    <button class="toggle-sidebar" (click)="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <div class="sidebar-menu">
+                    <div class="menu-section">
+                        <h3 class="section-title" *ngIf="!sidebarCollapsed">Dashboard</h3>
+                        <ul class="menu-list">
+                            <li class="menu-item" [class.active]="menuAtivo === 'dashboard'">
+                                <a href="#" (click)="navegarPara('dashboard', $event)" class="menu-link">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span *ngIf="!sidebarCollapsed">Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="menu-item" [class.active]="menuAtivo === 'painel'">
+                                <a routerLink="/painel" class="menu-link">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <span *ngIf="!sidebarCollapsed">Painel de Controle</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="menu-section">
+                        <h3 class="section-title" *ngIf="!sidebarCollapsed">Acadêmico</h3>
+                        <ul class="menu-list">
+                            <li class="menu-item" [class.active]="menuAtivo === 'alunos'">
+                                <a href="#" (click)="navegarPara('alunos', $event)" class="menu-link">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <span *ngIf="!sidebarCollapsed">Alunos</span>
+                                </a>
+                            </li>
+                            <li class="menu-item" [class.active]="menuAtivo === 'professores'">
+                                <a href="#" (click)="navegarPara('professores', $event)" class="menu-link">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                    <span *ngIf="!sidebarCollapsed">Professores</span>
+                                </a>
+                            </li>
+                            <li class="menu-item" [class.active]="menuAtivo === 'turmas'">
+                                <a href="#" (click)="navegarPara('turmas', $event)" class="menu-link">
+                                    <i class="fas fa-users"></i>
+                                    <span *ngIf="!sidebarCollapsed">Turmas</span>
+                                </a>
+                            </li>
+                            <li class="menu-item" [class.active]="menuAtivo === 'matriculas'">
+                                <a href="#" (click)="navegarPara('matriculas', $event)" class="menu-link">
+                                    <i class="fas fa-clipboard-list"></i>
+                                    <span *ngIf="!sidebarCollapsed">Matrículas</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="menu-section">
+                        <h3 class="section-title" *ngIf="!sidebarCollapsed">Administrativo</h3>
+                        <ul class="menu-list">
+                            <li class="menu-item" [class.active]="menuAtivo === 'financeiro'">
+                                <a href="#" (click)="navegarPara('financeiro', $event)" class="menu-link">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    <span *ngIf="!sidebarCollapsed">Financeiro</span>
+                                </a>
+                            </li>
+                            <li class="menu-item" [class.active]="menuAtivo === 'relatorios'">
+                                <a href="#" (click)="navegarPara('relatorios', $event)" class="menu-link">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span *ngIf="!sidebarCollapsed">Relatórios</span>
+                                </a>
+                            </li>
+                            <li class="menu-item" [class.active]="menuAtivo === 'configuracoes'">
+                                <a href="#" (click)="navegarPara('configuracoes', $event)" class="menu-link">
+                                    <i class="fas fa-cogs"></i>
+                                    <span *ngIf="!sidebarCollapsed">Configurações</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="content-area" [class.expanded]="sidebarCollapsed">
+                <!-- Breadcrumb -->
+                <div class="breadcrumb">
+                    <nav class="breadcrumb-nav">
+                        <a href="/" class="breadcrumb-item">Início</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">{{ tituloAtual || 'Menu Principal' }}</span>
+                    </nav>
+                </div>
+
+                <!-- Dashboard Cards -->
+                <div class="dashboard-content" *ngIf="!conteudoAtivo">
+                    <div class="welcome-section">
+                        <h1>Bem-vindo ao SIGE</h1>
+                        <p>Selecione uma opção no menu lateral para começar</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>{{ estatisticas.totalAlunos }}</h3>
+                                <p>Alunos Cadastrados</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>{{ estatisticas.totalProfessores }}</h3>
+                                <p>Professores Ativos</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>{{ estatisticas.totalTurmas }}</h3>
+                                <p>Turmas Ativas</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>{{ estatisticas.totalMatriculas }}</h3>
+                                <p>Matrículas Ativas</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <h2>Ações Rápidas</h2>
+                        <div class="actions-grid">
+                            <button class="action-card" (click)="navegarPara('alunos', null)">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Cadastrar Aluno</span>
+                            </button>
+                            
+                            <button class="action-card" (click)="navegarPara('professores', null)">
+                                <i class="fas fa-user-tie"></i>
+                                <span>Cadastrar Professor</span>
+                            </button>
+                            
+                            <button class="action-card" (click)="navegarPara('turmas', null)">
+                                <i class="fas fa-plus"></i>
+                                <span>Nova Turma</span>
+                            </button>
+                            
+                            <button class="action-card" (click)="navegarPara('matriculas', null)">
+                                <i class="fas fa-file-alt"></i>
+                                <span>Nova Matrícula</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Content -->
+                <div class="dynamic-content" *ngIf="conteudoAtivo">
+                    <div class="content-header">
+                        <h1>{{ tituloAtual }}</h1>
+                        <div class="content-actions">
+                            <button class="btn btn-primary" *ngIf="mostrarBotaoNovo">
+                                <i class="fas fa-plus"></i>
+                                Novo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="content-body">
+                        <!-- Conteúdo dinâmico será carregado aqui -->
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">
+                                <i [class]="iconeAtual"></i>
+                            </div>
+                            <h2>{{ tituloAtual }}</h2>
+                            <p>Esta funcionalidade está em desenvolvimento.</p>
+                            <p>Em breve você poderá gerenciar {{ tituloAtual.toLowerCase() }} por aqui.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

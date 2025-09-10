@@ -1,0 +1,190 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Autenticação SIGE</h1>
+      <p>Sistema de Autenticação Integrada</p>
+    </div>
+    
+    <div class="auth-content">
+      <div class="auth-tabs">
+        <button 
+          class="tab-button" 
+          [class.active]="tabAtiva === 'login'"
+          (click)="selecionarTab('login')">
+          Login
+        </button>
+        <button 
+          class="tab-button" 
+          [class.active]="tabAtiva === 'recuperar'"
+          (click)="selecionarTab('recuperar')">
+          Recuperar Senha
+        </button>
+        <button 
+          class="tab-button" 
+          [class.active]="tabAtiva === 'criar'"
+          (click)="selecionarTab('criar')">
+          Criar Conta
+        </button>
+      </div>
+
+      <!-- Login Tab -->
+      <div class="tab-content" *ngIf="tabAtiva === 'login'">
+        <form class="auth-form" (ngSubmit)="realizarLogin()" #loginForm="ngForm">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email"
+              [(ngModel)]="loginData.email"
+              placeholder="seu.email@exemplo.com"
+              required
+              #emailInput="ngModel">
+            <div class="error-message" *ngIf="emailInput.invalid && emailInput.touched">
+              Email é obrigatório
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Senha</label>
+            <div class="password-container">
+              <input 
+                [type]="mostrarSenha ? 'text' : 'password'"
+                id="password" 
+                name="password"
+                [(ngModel)]="loginData.senha"
+                placeholder="Sua senha"
+                required
+                #passwordInput="ngModel">
+              <button type="button" class="toggle-password" (click)="toggleSenha()">
+                <i [class]="mostrarSenha ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
+            <div class="error-message" *ngIf="passwordInput.invalid && passwordInput.touched">
+              Senha é obrigatória
+            </div>
+          </div>
+
+          <div class="form-options">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="loginData.lembrarMe" name="lembrarMe">
+              <span class="checkmark"></span>
+              Lembrar-me
+            </label>
+          </div>
+
+          <button type="submit" class="btn-primary" [disabled]="loginForm.invalid || carregando">
+            <span *ngIf="carregando" class="spinner"></span>
+            {{ carregando ? 'Entrando...' : 'Entrar' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Recuperar Senha Tab -->
+      <div class="tab-content" *ngIf="tabAtiva === 'recuperar'">
+        <form class="auth-form" (ngSubmit)="recuperarSenha()" #recuperarForm="ngForm">
+          <div class="info-message">
+            <i class="fas fa-info-circle"></i>
+            <p>Digite seu email para receber as instruções de recuperação de senha.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="emailRecuperar">Email</label>
+            <input 
+              type="email" 
+              id="emailRecuperar" 
+              name="emailRecuperar"
+              [(ngModel)]="recuperarData.email"
+              placeholder="seu.email@exemplo.com"
+              required>
+          </div>
+
+          <button type="submit" class="btn-primary" [disabled]="recuperarForm.invalid || carregando">
+            <span *ngIf="carregando" class="spinner"></span>
+            {{ carregando ? 'Enviando...' : 'Enviar Instruções' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Criar Conta Tab -->
+      <div class="tab-content" *ngIf="tabAtiva === 'criar'">
+        <form class="auth-form" (ngSubmit)="criarConta()" #criarForm="ngForm">
+          <div class="form-group">
+            <label for="nomeCompleto">Nome Completo</label>
+            <input 
+              type="text" 
+              id="nomeCompleto" 
+              name="nomeCompleto"
+              [(ngModel)]="criarData.nome"
+              placeholder="Seu nome completo"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="emailCriar">Email</label>
+            <input 
+              type="email" 
+              id="emailCriar" 
+              name="emailCriar"
+              [(ngModel)]="criarData.email"
+              placeholder="seu.email@exemplo.com"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="senhaCriar">Senha</label>
+            <input 
+              type="password" 
+              id="senhaCriar" 
+              name="senhaCriar"
+              [(ngModel)]="criarData.senha"
+              placeholder="Crie uma senha forte"
+              required
+              minlength="6">
+          </div>
+
+          <div class="form-group">
+            <label for="senhaConfirmar">Confirmar Senha</label>
+            <input 
+              type="password" 
+              id="senhaConfirmar" 
+              name="senhaConfirmar"
+              [(ngModel)]="criarData.confirmarSenha"
+              placeholder="Confirme sua senha"
+              required>
+          </div>
+
+          <div class="form-group">
+            <label for="tipo">Tipo de Usuário</label>
+            <select 
+              id="tipo" 
+              name="tipo"
+              [(ngModel)]="criarData.tipo"
+              required>
+              <option value="">Selecione o tipo</option>
+              <option value="aluno">Aluno</option>
+              <option value="professor">Professor</option>
+              <option value="responsavel">Responsável</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-primary" [disabled]="criarForm.invalid || carregando">
+            <span *ngIf="carregando" class="spinner"></span>
+            {{ carregando ? 'Criando...' : 'Criar Conta' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Mensagens de Feedback -->
+      <div *ngIf="mensagem" class="alert" [class.alert-success]="!erro" [class.alert-error]="erro">
+        <i [class]="erro ? 'fas fa-exclamation-triangle' : 'fas fa-check-circle'"></i>
+        {{ mensagem }}
+      </div>
+    </div>
+
+    <div class="auth-footer">
+      <p><a routerLink="/">← Voltar ao Início</a></p>
+    </div>
+  </div>
+</div>

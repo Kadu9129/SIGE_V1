@@ -1,0 +1,15 @@
+/* Estilos do componente raiz do app */
+:host {
+  display: block;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Garante que o router-outlet não tenha margens */
+router-outlet {
+  display: block;
+  margin: 0;
+  padding: 0;
+}

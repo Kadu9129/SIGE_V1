@@ -1,0 +1,335 @@
+<div class="painel-container">
+  <!-- Header -->
+  <header class="painel-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <h1>SIGE</h1>
+        <span>Painel de Controle</span>
+      </div>
+      <div class="user-info" *ngIf="usuario">
+        <span class="user-name">{{ usuario.nome }}</span>
+        <button class="btn-logout" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="painel-nav">
+    <div class="nav-content">
+      <div class="nav-tabs">
+        <button 
+          class="nav-tab" 
+          [class.active]="abaSelecionada === 'dashboard'"
+          (click)="selecionarAba('dashboard')">
+          <i class="fas fa-tachometer-alt"></i>
+          Dashboard
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="abaSelecionada === 'usuarios'"
+          (click)="selecionarAba('usuarios')">
+          <i class="fas fa-users"></i>
+          Usuários
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="abaSelecionada === 'sistema'"
+          (click)="selecionarAba('sistema')">
+          <i class="fas fa-cogs"></i>
+          Sistema
+        </button>
+        <button 
+          class="nav-tab" 
+          [class.active]="abaSelecionada === 'relatorios'"
+          (click)="selecionarAba('relatorios')">
+          <i class="fas fa-chart-line"></i>
+          Relatórios
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="painel-content">
+    <!-- Dashboard Tab -->
+    <div class="tab-content" *ngIf="abaSelecionada === 'dashboard'">
+      <div class="content-header">
+        <h2>Dashboard Administrativo</h2>
+        <p>Visão geral do sistema SIGE</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon usuarios">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{ estatisticas.usuariosAtivos }}</h3>
+            <p>Usuários Ativos</p>
+            <span class="stat-trend positive">
+              <i class="fas fa-arrow-up"></i> +5.2%
+            </span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon sessoes">
+            <i class="fas fa-desktop"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{ estatisticas.sessoesAbertas }}</h3>
+            <p>Sessões Abertas</p>
+            <span class="stat-trend positive">
+              <i class="fas fa-arrow-up"></i> +12.8%
+            </span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon sistema">
+            <i class="fas fa-server"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{ estatisticas.uptime }}%</h3>
+            <p>Uptime do Sistema</p>
+            <span class="stat-trend positive">
+              <i class="fas fa-check"></i> Estável
+            </span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon dados">
+            <i class="fas fa-database"></i>
+          </div>
+          <div class="stat-info">
+            <h3>{{ estatisticas.armazenamento }}GB</h3>
+            <p>Armazenamento Usado</p>
+            <span class="stat-trend neutral">
+              <i class="fas fa-minus"></i> 0%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Activity -->
+      <div class="activity-section">
+        <h3>Atividade Recente do Sistema</h3>
+        <div class="activity-list">
+          <div class="activity-item" *ngFor="let atividade of atividades">
+            <div class="activity-icon" [ngClass]="atividade.tipo">
+              <i [class]="atividade.icone"></i>
+            </div>
+            <div class="activity-info">
+              <h4>{{ atividade.titulo }}</h4>
+              <p>{{ atividade.descricao }}</p>
+              <span class="activity-time">{{ atividade.tempo }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usuários Tab -->
+    <div class="tab-content" *ngIf="abaSelecionada === 'usuarios'">
+      <div class="content-header">
+        <h2>Gestão de Usuários</h2>
+        <button class="btn-primary" (click)="novoUsuario()">
+          <i class="fas fa-plus"></i> Novo Usuário
+        </button>
+      </div>
+
+      <div class="users-section">
+        <div class="filters">
+          <input type="search" placeholder="Buscar usuários..." [(ngModel)]="filtroUsuarios">
+          <select [(ngModel)]="filtroTipo">
+            <option value="">Todos os tipos</option>
+            <option value="admin">Administrador</option>
+            <option value="professor">Professor</option>
+            <option value="aluno">Aluno</option>
+            <option value="responsavel">Responsável</option>
+          </select>
+        </div>
+
+        <div class="users-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Tipo</th>
+                <th>Status</th>
+                <th>Último Acesso</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let usuario of usuariosFiltrados">
+                <td>
+                  <div class="user-info-cell">
+                    <div class="user-avatar-small">{{ usuario.nome.charAt(0) }}</div>
+                    {{ usuario.nome }}
+                  </div>
+                </td>
+                <td>{{ usuario.email }}</td>
+                <td>
+                  <span class="user-type-badge" [ngClass]="usuario.tipo">
+                    {{ usuario.tipo | titlecase }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge" [ngClass]="usuario.status">
+                    {{ usuario.status | titlecase }}
+                  </span>
+                </td>
+                <td>{{ usuario.ultimoAcesso | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <div class="table-actions">
+                    <button class="btn-action edit" (click)="editarUsuario(usuario)">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action delete" (click)="confirmarExclusao(usuario)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sistema Tab -->
+    <div class="tab-content" *ngIf="abaSelecionada === 'sistema'">
+      <div class="content-header">
+        <h2>Configurações do Sistema</h2>
+        <p>Gerenciar configurações e parâmetros do SIGE</p>
+      </div>
+
+      <div class="system-section">
+        <div class="config-groups">
+          <div class="config-group">
+            <h3>Configurações Gerais</h3>
+            <div class="config-item">
+              <label>Nome da Instituição</label>
+              <input type="text" [(ngModel)]="configuracoes.nomeInstituicao">
+            </div>
+            <div class="config-item">
+              <label>Ano Letivo</label>
+              <input type="number" [(ngModel)]="configuracoes.anoLetivo">
+            </div>
+            <div class="config-item">
+              <label>Timezone</label>
+              <select [(ngModel)]="configuracoes.timezone">
+                <option value="America/Sao_Paulo">América/São Paulo</option>
+                <option value="America/Rio_Branco">América/Rio Branco</option>
+                <option value="America/Manaus">América/Manaus</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="config-group">
+            <h3>Segurança</h3>
+            <div class="config-item">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="configuracoes.autenticacaoDupla">
+                <span>Autenticação de dois fatores obrigatória</span>
+              </label>
+            </div>
+            <div class="config-item">
+              <label>Tempo limite de sessão (minutos)</label>
+              <input type="number" [(ngModel)]="configuracoes.tempoSessao">
+            </div>
+            <div class="config-item">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="configuracoes.logAuditoria">
+                <span>Habilitar log de auditoria</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="config-group">
+            <h3>Notificações</h3>
+            <div class="config-item">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="configuracoes.emailNotificacoes">
+                <span>Notificações por email</span>
+              </label>
+            </div>
+            <div class="config-item">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="configuracoes.smsNotificacoes">
+                <span>Notificações por SMS</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-actions">
+          <button class="btn-secondary" (click)="resetarConfiguracoes()">Restaurar Padrões</button>
+          <button class="btn-primary" (click)="salvarConfiguracoes()">Salvar Configurações</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Relatórios Tab -->
+    <div class="tab-content" *ngIf="abaSelecionada === 'relatorios'">
+      <div class="content-header">
+        <h2>Relatórios do Sistema</h2>
+        <p>Gerar e visualizar relatórios administrativos</p>
+      </div>
+
+      <div class="reports-section">
+        <div class="report-categories">
+          <div class="report-category">
+            <h3>Relatórios de Usuários</h3>
+            <div class="report-list">
+              <div class="report-item">
+                <i class="fas fa-users"></i>
+                <div class="report-info">
+                  <h4>Usuários Ativos</h4>
+                  <p>Lista de usuários ativos no sistema</p>
+                </div>
+                <button class="btn-generate" (click)="gerarRelatorio('usuarios-ativos')">Gerar</button>
+              </div>
+              <div class="report-item">
+                <i class="fas fa-sign-in-alt"></i>
+                <div class="report-info">
+                  <h4>Log de Acessos</h4>
+                  <p>Histórico de login dos usuários</p>
+                </div>
+                <button class="btn-generate" (click)="gerarRelatorio('log-acessos')">Gerar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-category">
+            <h3>Relatórios do Sistema</h3>
+            <div class="report-list">
+              <div class="report-item">
+                <i class="fas fa-server"></i>
+                <div class="report-info">
+                  <h4>Performance do Sistema</h4>
+                  <p>Métricas de desempenho e uptime</p>
+                </div>
+                <button class="btn-generate" (click)="gerarRelatorio('performance')">Gerar</button>
+              </div>
+              <div class="report-item">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="report-info">
+                  <h4>Log de Erros</h4>
+                  <p>Registro de erros e exceções</p>
+                </div>
+                <button class="btn-generate" (click)="gerarRelatorio('erros')">Gerar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

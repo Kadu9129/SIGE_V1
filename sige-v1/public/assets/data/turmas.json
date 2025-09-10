@@ -1,0 +1,140 @@
+[
+  {
+    "id": 1,
+    "nome": "3º Ano A - Ensino Médio",
+    "serie": "3º Ano",
+    "nivel": "Ensino Médio",
+    "turno": "Manhã",
+    "sala": "101",
+    "capacidadeMaxima": 30,
+    "anoLetivo": "2024",
+    "professorResponsavel": {
+      "id": 1,
+      "nome": "Prof. Ricardo Mendes"
+    },
+    "disciplinas": [
+      {
+        "nome": "Matemática",
+        "professorId": 1,
+        "cargaHoraria": 5
+      },
+      {
+        "nome": "Português",
+        "professorId": 2,
+        "cargaHoraria": 4
+      },
+      {
+        "nome": "Biologia",
+        "professorId": 4,
+        "cargaHoraria": 3
+      },
+      {
+        "nome": "Educação Física",
+        "professorId": 5,
+        "cargaHoraria": 2
+      }
+    ],
+    "horario": {
+      "segunda": ["Matemática", "Português", "Biologia", "Ed. Física"],
+      "terca": ["Matemática", "História", "Biologia", "Português"],
+      "quarta": ["Português", "Matemática", "História", "Ed. Física"],
+      "quinta": ["Biologia", "Matemática", "Português", "História"],
+      "sexta": ["Ed. Física", "Português", "Matemática", "Biologia"]
+    },
+    "totalAlunos": 28,
+    "status": "ativa",
+    "dataCriacao": "2024-01-10"
+  },
+  {
+    "id": 2,
+    "nome": "2º Ano B - Ensino Médio",
+    "serie": "2º Ano",
+    "nivel": "Ensino Médio",
+    "turno": "Tarde",
+    "sala": "102",
+    "capacidadeMaxima": 32,
+    "anoLetivo": "2024",
+    "professorResponsavel": {
+      "id": 2,
+      "nome": "Profa. Carmen Lucia Silva"
+    },
+    "disciplinas": [
+      {
+        "nome": "Português",
+        "professorId": 2,
+        "cargaHoraria": 4
+      },
+      {
+        "nome": "Matemática",
+        "professorId": 1,
+        "cargaHoraria": 5
+      },
+      {
+        "nome": "História",
+        "professorId": 3,
+        "cargaHoraria": 3
+      },
+      {
+        "nome": "Educação Física",
+        "professorId": 5,
+        "cargaHoraria": 2
+      }
+    ],
+    "horario": {
+      "segunda": ["Português", "Matemática", "História", "Ed. Física"],
+      "terca": ["Matemática", "Português", "História", "Ed. Física"],
+      "quarta": ["História", "Matemática", "Português", "Ed. Física"],
+      "quinta": ["Português", "História", "Matemática", "Ed. Física"],
+      "sexta": ["Matemática", "Português", "História", "Ed. Física"]
+    },
+    "totalAlunos": 30,
+    "status": "ativa",
+    "dataCriacao": "2024-01-12"
+  },
+  {
+    "id": 3,
+    "nome": "1º Ano C - Ensino Médio",
+    "serie": "1º Ano",
+    "nivel": "Ensino Médio",
+    "turno": "Manhã",
+    "sala": "103",
+    "capacidadeMaxima": 35,
+    "anoLetivo": "2024",
+    "professorResponsavel": {
+      "id": 3,
+      "nome": "Prof. Anderson Santos"
+    },
+    "disciplinas": [
+      {
+        "nome": "História",
+        "professorId": 3,
+        "cargaHoraria": 3
+      },
+      {
+        "nome": "Português",
+        "professorId": 2,
+        "cargaHoraria": 4
+      },
+      {
+        "nome": "Biologia",
+        "professorId": 4,
+        "cargaHoraria": 3
+      },
+      {
+        "nome": "Educação Física",
+        "professorId": 5,
+        "cargaHoraria": 2
+      }
+    ],
+    "horario": {
+      "segunda": ["História", "Português", "Biologia", "Ed. Física"],
+      "terca": ["Português", "História", "Biologia", "Ed. Física"],
+      "quarta": ["Biologia", "História", "Português", "Ed. Física"],
+      "quinta": ["Português", "Biologia", "História", "Ed. Física"],
+      "sexta": ["História", "Português", "Biologia", "Ed. Física"]
+    },
+    "totalAlunos": 32,
+    "status": "ativa",
+    "dataCriacao": "2024-01-15"
+  }
+]

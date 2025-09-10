@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "nome": "Ana Silva Santos",
+    "email": "ana.santos@email.com",
+    "cpf": "123.456.789-01",
+    "dataNascimento": "2005-03-15",
+    "telefone": "(11) 99999-1234",
+    "endereco": {
+      "rua": "Rua das Flores, 123",
+      "bairro": "Centro",
+      "cidade": "São Paulo",
+      "cep": "01234-567"
+    },
+    "responsavel": {
+      "nome": "Maria Santos",
+      "telefone": "(11) 98888-1234",
+      "email": "maria.santos@email.com"
+    },
+    "turmaId": 1,
+    "status": "ativo",
+    "dataMatricula": "2024-01-15"
+  },
+  {
+    "id": 2,
+    "nome": "João Pedro Oliveira",
+    "email": "joao.oliveira@email.com",
+    "cpf": "987.654.321-02",
+    "dataNascimento": "2004-07-20",
+    "telefone": "(11) 99999-5678",
+    "endereco": {
+      "rua": "Av. Paulista, 456",
+      "bairro": "Bela Vista",
+      "cidade": "São Paulo",
+      "cep": "01310-100"
+    },
+    "responsavel": {
+      "nome": "Carlos Oliveira",
+      "telefone": "(11) 98888-5678",
+      "email": "carlos.oliveira@email.com"
+    },
+    "turmaId": 1,
+    "status": "ativo",
+    "dataMatricula": "2024-01-15"
+  },
+  {
+    "id": 3,
+    "nome": "Mariana Costa Lima",
+    "email": "mariana.lima@email.com",
+    "cpf": "456.789.123-03",
+    "dataNascimento": "2005-11-08",
+    "telefone": "(11) 99999-9012",
+    "endereco": {
+      "rua": "Rua Augusta, 789",
+      "bairro": "Consolação",
+      "cidade": "São Paulo",
+      "cep": "01305-000"
+    },
+    "responsavel": {
+      "nome": "Luiza Lima",
+      "telefone": "(11) 98888-9012",
+      "email": "luiza.lima@email.com"
+    },
+    "turmaId": 2,
+    "status": "ativo",
+    "dataMatricula": "2024-01-20"
+  },
+  {
+    "id": 4,
+    "nome": "Pedro Henrique Souza",
+    "email": "pedro.souza@email.com",
+    "cpf": "789.123.456-04",
+    "dataNascimento": "2004-09-12",
+    "telefone": "(11) 99999-3456",
+    "endereco": {
+      "rua": "Rua Oscar Freire, 321",
+      "bairro": "Jardins",
+      "cidade": "São Paulo",
+      "cep": "01426-001"
+    },
+    "responsavel": {
+      "nome": "Roberto Souza",
+      "telefone": "(11) 98888-3456",
+      "email": "roberto.souza@email.com"
+    },
+    "turmaId": 2,
+    "status": "ativo",
+    "dataMatricula": "2024-01-18"
+  },
+  {
+    "id": 5,
+    "nome": "Larissa Fernandes",
+    "email": "larissa.fernandes@email.com",
+    "cpf": "321.654.987-05",
+    "dataNascimento": "2005-01-30",
+    "telefone": "(11) 99999-7890",
+    "endereco": {
+      "rua": "Rua Haddock Lobo, 654",
+      "bairro": "Cerqueira César",
+      "cidade": "São Paulo",
+      "cep": "01414-002"
+    },
+    "responsavel": {
+      "nome": "Patricia Fernandes",
+      "telefone": "(11) 98888-7890",
+      "email": "patricia.fernandes@email.com"
+    },
+    "turmaId": 3,
+    "status": "ativo",
+    "dataMatricula": "2024-02-01"
+  }
+]

@@ -1,0 +1,177 @@
+[
+  {
+    "id": 1,
+    "numeroMatricula": "2024001",
+    "alunoId": 1,
+    "aluno": {
+      "nome": "Ana Silva Santos",
+      "cpf": "123.456.789-01"
+    },
+    "turmaId": 1,
+    "turma": {
+      "nome": "3º Ano A - Ensino Médio",
+      "serie": "3º Ano"
+    },
+    "anoLetivo": "2024",
+    "dataMatricula": "2024-01-15",
+    "status": "ativa",
+    "valorMensalidade": 800.00,
+    "desconto": 0,
+    "valorFinal": 800.00,
+    "formaPagamento": "Boleto",
+    "observacoes": "Aluna transferida de outra instituição",
+    "documentos": {
+      "rg": true,
+      "cpf": true,
+      "comprovanteResidencia": true,
+      "historicoEscolar": true,
+      "certidaoNascimento": true
+    },
+    "responsavelFinanceiro": {
+      "nome": "Maria Santos",
+      "cpf": "987.654.321-00",
+      "telefone": "(11) 98888-1234",
+      "email": "maria.santos@email.com"
+    }
+  },
+  {
+    "id": 2,
+    "numeroMatricula": "2024002",
+    "alunoId": 2,
+    "aluno": {
+      "nome": "João Pedro Oliveira",
+      "cpf": "987.654.321-02"
+    },
+    "turmaId": 1,
+    "turma": {
+      "nome": "3º Ano A - Ensino Médio",
+      "serie": "3º Ano"
+    },
+    "anoLetivo": "2024",
+    "dataMatricula": "2024-01-15",
+    "status": "ativa",
+    "valorMensalidade": 800.00,
+    "desconto": 10,
+    "valorFinal": 720.00,
+    "formaPagamento": "Cartão de Crédito",
+    "observacoes": "Desconto por irmão na mesma escola",
+    "documentos": {
+      "rg": true,
+      "cpf": true,
+      "comprovanteResidencia": true,
+      "historicoEscolar": true,
+      "certidaoNascimento": true
+    },
+    "responsavelFinanceiro": {
+      "nome": "Carlos Oliveira",
+      "cpf": "123.987.654-32",
+      "telefone": "(11) 98888-5678",
+      "email": "carlos.oliveira@email.com"
+    }
+  },
+  {
+    "id": 3,
+    "numeroMatricula": "2024003",
+    "alunoId": 3,
+    "aluno": {
+      "nome": "Mariana Costa Lima",
+      "cpf": "456.789.123-03"
+    },
+    "turmaId": 2,
+    "turma": {
+      "nome": "2º Ano B - Ensino Médio",
+      "serie": "2º Ano"
+    },
+    "anoLetivo": "2024",
+    "dataMatricula": "2024-01-20",
+    "status": "ativa",
+    "valorMensalidade": 750.00,
+    "desconto": 0,
+    "valorFinal": 750.00,
+    "formaPagamento": "PIX",
+    "observacoes": "Aluna regular, sem pendências",
+    "documentos": {
+      "rg": true,
+      "cpf": true,
+      "comprovanteResidencia": true,
+      "historicoEscolar": true,
+      "certidaoNascimento": true
+    },
+    "responsavelFinanceiro": {
+      "nome": "Luiza Lima",
+      "cpf": "654.321.987-65",
+      "telefone": "(11) 98888-9012",
+      "email": "luiza.lima@email.com"
+    }
+  },
+  {
+    "id": 4,
+    "numeroMatricula": "2024004",
+    "alunoId": 4,
+    "aluno": {
+      "nome": "Pedro Henrique Souza",
+      "cpf": "789.123.456-04"
+    },
+    "turmaId": 2,
+    "turma": {
+      "nome": "2º Ano B - Ensino Médio",
+      "serie": "2º Ano"
+    },
+    "anoLetivo": "2024",
+    "dataMatricula": "2024-01-18",
+    "status": "ativa",
+    "valorMensalidade": 750.00,
+    "desconto": 5,
+    "valorFinal": 712.50,
+    "formaPagamento": "Boleto",
+    "observacoes": "Desconto por pontualidade no pagamento",
+    "documentos": {
+      "rg": true,
+      "cpf": true,
+      "comprovanteResidencia": true,
+      "historicoEscolar": true,
+      "certidaoNascimento": false
+    },
+    "responsavelFinanceiro": {
+      "nome": "Roberto Souza",
+      "cpf": "321.654.987-12",
+      "telefone": "(11) 98888-3456",
+      "email": "roberto.souza@email.com"
+    }
+  },
+  {
+    "id": 5,
+    "numeroMatricula": "2024005",
+    "alunoId": 5,
+    "aluno": {
+      "nome": "Larissa Fernandes",
+      "cpf": "321.654.987-05"
+    },
+    "turmaId": 3,
+    "turma": {
+      "nome": "1º Ano C - Ensino Médio",
+      "serie": "1º Ano"
+    },
+    "anoLetivo": "2024",
+    "dataMatricula": "2024-02-01",
+    "status": "pendente",
+    "valorMensalidade": 700.00,
+    "desconto": 0,
+    "valorFinal": 700.00,
+    "formaPagamento": "Boleto",
+    "observacoes": "Aguardando documentação complementar",
+    "documentos": {
+      "rg": true,
+      "cpf": true,
+      "comprovanteResidencia": false,
+      "historicoEscolar": true,
+      "certidaoNascimento": true
+    },
+    "responsavelFinanceiro": {
+      "nome": "Patricia Fernandes",
+      "cpf": "987.321.654-78",
+      "telefone": "(11) 98888-7890",
+      "email": "patricia.fernandes@email.com"
+    }
+  }
+]
