@@ -1,0 +1,125 @@
+<section class="panel-section card" id="pre-matriculas-section" *ngIf="visible">
+  <header class="section-header">
+    <div>
+      <h2>Pré-matrículas</h2>
+      <p>Gerencie solicitações, confira documentos e conclua novas matrículas.</p>
+    </div>
+    <select [ngModel]="filtro" (ngModelChange)="atualizarFiltro($event)">
+      <option value="todas">Todas as solicitações</option>
+      <option value="aguardando">Aguardando análise</option>
+      <option value="aprovado">Aprovadas</option>
+      <option value="indeferido">Indeferidas</option>
+    </select>
+  </header>
+
+  <div class="pre-matricula-grid" *ngIf="preMatriculasFiltradas.length; else preMatriculasVazio">
+    <div class="pre-matricula-list">
+      <div
+        class="pre-matricula-card"
+        *ngFor="let pre of preMatriculasFiltradas"
+        [class.active]="pre === selecionada"
+        (click)="selecionarPreMatricula(pre)"
+      >
+        <div class="card-header">
+          <strong>{{ pre.aluno }}</strong>
+          <span class="status-badge" [ngClass]="statusClasses[pre.status]">
+            {{ statusLabels[pre.status] }}
+          </span>
+        </div>
+        <p class="card-subtitle">Responsável: {{ pre.responsavel }}</p>
+        <div class="card-meta">
+          <span><i class="fas fa-graduation-cap"></i> {{ pre.serie }}</span>
+          <span><i class="fas fa-clock"></i> {{ pre.dataEnvio | date:'dd/MM HH:mm' }}</span>
+        </div>
+        <div class="document-progress">
+          <div class="progress-bar" [style.width.%]="progressoDocumentos(pre)"></div>
+        </div>
+        <small>{{ documentosAceitos(pre) }} de {{ pre.documentos.length }} documentos aceitos</small>
+      </div>
+    </div>
+
+    <div class="pre-matricula-detail" *ngIf="selecionada as atual; else detalheVazio">
+      <header>
+        <div>
+            <p>_</p>
+          <p class="eyebrow">Solicitação {{ atual.id }}</p>
+          <h3>{{ atual.aluno }}</h3>
+          <p>{{ atual.serie }}</p>
+          <p>Responsável: {{ atual.responsavel }} </p>
+        </div>
+        <span class="status-badge" [ngClass]="statusClasses[atual.status]">
+          {{ statusLabels[atual.status] }}
+        </span>
+      </header>
+
+      <div class="detail-actions">
+        <label>Status da análise</label>
+        <div class="status-options">
+          <button type="button" (click)="atualizarStatus('aguardando')" [class.active]="atual.status === 'aguardando'">
+            <i class="fas fa-hourglass-half"></i>
+            Aguardando
+          </button>
+          <button type="button" (click)="atualizarStatus('aprovado')" [class.active]="atual.status === 'aprovado'">
+            <i class="fas fa-check-circle"></i>
+            Aprovar
+          </button>
+          <button type="button" (click)="atualizarStatus('indeferido')" [class.active]="atual.status === 'indeferido'">
+            <i class="fas fa-times-circle"></i>
+            Indeferir
+          </button>
+        </div>
+      </div>
+
+      <section>
+        <h4>Documentação enviada</h4>
+        <div class="document-list">
+          <div class="document-item" *ngFor="let documento of atual.documentos">
+            <div>
+              <strong>{{ documento.tipo }}</strong>
+              <small>         ->   Status atual</small>
+            </div>
+            <select [ngModel]="documento.status" (ngModelChange)="atualizarDocumento(documento, $event)">
+              <option value="pendente">Pendente</option>
+              <option value="enviado">Enviado</option>
+              <option value="aceito">Aceito</option>
+              <option value="recusado">Recusado</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h4>Observações</h4>
+        <textarea
+          rows="3"
+          placeholder="Informe pendências, orientações ou prazos"
+          [ngModel]="atual.observacoes || ''"
+          (ngModelChange)="atualizarObservacoes($event)"
+        ></textarea>
+      </section>
+
+      <div class="detail-footer">
+        <button type="button" class="btn-secondary" (click)="indeferir.emit()">
+          <i class="fas fa-ban"></i>
+          Indeferir solicitação
+        </button>
+        <button type="button" class="btn-primary" (click)="concluir.emit()">
+          <i class="fas fa-check"></i>
+          Concluir matrícula
+        </button>
+      </div>
+    </div>
+    <ng-template #detalheVazio>
+      <div class="empty-state">
+        <i class="fas fa-user-clock"></i>
+        <p>Selecione uma solicitação para visualizar detalhes.</p>
+      </div>
+    </ng-template>
+  </div>
+  <ng-template #preMatriculasVazio>
+    <div class="empty-state">
+      <i class="fas fa-folder-open"></i>
+      <p>Nenhuma solicitação encontrada para o filtro aplicado.</p>
+    </div>
+  </ng-template>
+</section>

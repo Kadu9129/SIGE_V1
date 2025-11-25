@@ -1,0 +1,126 @@
+<section class="panel-section card" id="transferencias-section" *ngIf="visible">
+  <header class="section-header">
+    <div>
+      <h2>Transferência de alunos</h2>
+      <p>Selecione o destino, registre a justificativa e confirme o envio.</p>
+    </div>
+  </header>
+
+  <div class="transfer-grid">
+    <div class="transfer-flow">
+      <div class="flow-block">
+        <div class="flow-block__header">
+          <p class="eyebrow">1. Solicitação</p>
+          <strong>Escolha a transferência em análise</strong>
+        </div>
+        <div class="request-list" *ngIf="solicitacoes.length; else semSolicitacoes">
+          <button
+            type="button"
+            class="request-card"
+            *ngFor="let solicitacao of solicitacoes; trackBy: trackById"
+            [class.active]="solicitacao === selecionada"
+            (click)="selecionarSolicitacao(solicitacao)"
+          >
+            <div>
+              <strong>{{ solicitacao.aluno }}</strong>
+              <small>{{ solicitacao.origem }}</small>
+            </div>
+            <span class="status-badge" [ngClass]="statusClasses[solicitacao.status]">
+              {{ statusLabels[solicitacao.status] }}
+            </span>
+          </button>
+        </div>
+        <ng-template #semSolicitacoes>
+          <div class="empty-state">
+            <i class="fas fa-route"></i>
+            <p>Não há solicitações pendentes no momento.</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <ng-container *ngIf="selecionada as atual; else selecaoVazia">
+        <div class="flow-block">
+          <p class="eyebrow">2. Destino</p>
+          <label for="destino-select">Selecione a escola de destino</label>
+          <select
+            id="destino-select"
+            [ngModel]="atual.destinoId || ''"
+            (ngModelChange)="atualizarDestino($event)"
+          >
+            <option value="">Escolha a unidade</option>
+            <option *ngFor="let escola of destinos" [value]="escola.id">
+              {{ escola.nome }} • {{ escola.cidade }} ({{ escola.vagas }} vagas)
+            </option>
+          </select>
+        </div>
+
+        <div class="flow-block">
+          <p class="eyebrow">3. Justificativa</p>
+          <label for="justificativa-textarea">Contextualize a movimentação</label>
+          <textarea
+            id="justificativa-textarea"
+            rows="3"
+            [ngModel]="atual.justificativa || ''"
+            (ngModelChange)="atualizarJustificativa($event)"
+            placeholder="Explique o motivo da transferência"
+          ></textarea>
+        </div>
+
+        <div class="confirm-card">
+          <div>
+            <p class="eyebrow">4. Confirmação</p>
+            <h3>{{ atual.aluno }}</h3>
+            <ul>
+              <li><strong>Origem:</strong> {{ atual.origem }}</li>
+              <li><strong>Destino:</strong> {{ atual.destino || 'Selecione uma unidade' }}</li>
+              <li><strong>Justificativa:</strong> {{ atual.justificativa || 'Informe os motivos' }}</li>
+            </ul>
+          </div>
+          <div class="confirm-actions">
+            <button type="button" class="btn-secondary" (click)="cancelar.emit()">
+              <i class="fas fa-ban"></i>
+              Cancelar
+            </button>
+            <button type="button" class="btn-primary" (click)="confirmar.emit()">
+              <i class="fas fa-check"></i>
+              Confirmar transferência
+            </button>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #selecaoVazia>
+        <div class="empty-state">
+          <i class="fas fa-location-dot"></i>
+          <p>Selecione uma solicitação para continuar o fluxo.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="transfer-history">
+      <header>
+        <div>
+          <h3>Histórico de transferências</h3>
+          <p>Ultimas movimentações registradas.</p>
+        </div>
+      </header>
+      <div class="history-list" *ngIf="historico.length; else semHistorico">
+        <div class="history-item" *ngFor="let registro of historico; trackBy: trackById">
+          <div>
+            <strong>{{ registro.aluno }}</strong>
+            <p>{{ registro.origem }} → {{ registro.destino }}</p>
+            <small>{{ registro.dataAtualizacao | date:'dd/MM/yyyy HH:mm' }}</small>
+          </div>
+          <span class="status-badge" [ngClass]="statusClasses[registro.status]">
+            {{ statusLabels[registro.status] }}
+          </span>
+        </div>
+      </div>
+      <ng-template #semHistorico>
+        <div class="empty-state">
+          <i class="fas fa-clock"></i>
+          <p>Ainda não há registros anteriores.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</section>

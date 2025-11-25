@@ -428,6 +428,9 @@ body {
 
 .status-badge.ativo { background: #e8f5e8; color: #2e7d32; }
 .status-badge.inativo { background: #ffebee; color: #c62828; }
+.status-badge.success { background: #e8f5e8; color: #2e7d32; }
+.status-badge.warning { background: #fff8e1; color: #f57c00; }
+.status-badge.error { background: #ffebee; color: #c62828; }
 
 .table-actions {
     display: flex;
@@ -512,6 +515,7 @@ body {
     border-radius: 6px;
     font-size: 1rem;
 }
+
 
 .checkbox-label {
     display: flex !important;

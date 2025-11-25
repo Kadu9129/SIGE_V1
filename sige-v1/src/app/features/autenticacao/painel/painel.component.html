@@ -1,14 +1,15 @@
 <section class="admin-panel">
 
+
   <div class="panel-view">
     <header class="panel-hero card" id="top" *ngIf="isSection('resumo')">
       <div class="hero-text">
         <p class="eyebrow">{{ saudacao }}, {{ primeiroNome }}!</p>
-        <h1>Central Administrativa do SIGE</h1>
-        <p class="lead">Monitore indicadores operacionais, mantenha o cadastro em dia e acompanhe a saúde da plataforma em tempo real.</p>
+        <h1>Secretaria Escolar do SIGE</h1>
+        <p class="lead">Acompanhe matrículas, transferências e solicitações oficiais em um só lugar.</p>
         <div class="hero-tags">
           <span class="tag">Último acesso: {{ ultimoAcesso }}</span>
-          <span class="tag success">Uptime {{ estatisticas.uptime }}%</span>
+          <span class="tag success">Atendimentos hoje: {{ estatisticas.solicitacoesHoje }}</span>
         </div>
       </div>
     </header>
@@ -16,8 +17,8 @@
     <section class="panel-section card" id="indicadores-section" *ngIf="isSection('indicadores')">
       <header class="section-header">
         <div>
-          <h2>Indicadores principais</h2>
-          <p>Acompanhe os números operacionais em tempo real.</p>
+          <h2>Indicadores da secretaria</h2>
+          <p>Resumo diário das demandas acadêmicas.</p>
         </div>
       </header>
 
@@ -27,56 +28,35 @@
             <i class="fas fa-users"></i>
           </div>
           <div class="stat-info">
-            <h3>{{ estatisticas.usuariosAtivos }}</h3>
-            <p>Usuários ativos</p>
+            <h3>{{ estatisticas.matriculasAtivas }}</h3>
+            <p>Matrículas ativas</p>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon sessoes">
-            <i class="fas fa-desktop"></i>
+            <i class="fas fa-file-signature"></i>
           </div>
           <div class="stat-info">
-            <h3>{{ estatisticas.sessoesAbertas }}</h3>
-            <p>Sessões abertas</p>
+            <h3>{{ estatisticas.documentosPendentes }}</h3>
+            <p>Documentos pendentes</p>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon sistema">
-            <i class="fas fa-server"></i>
+            <i class="fas fa-calendar-check"></i>
           </div>
           <div class="stat-info">
-            <h3>{{ estatisticas.uptime }}%</h3>
-            <p>Disponibilidade</p>
+            <h3>{{ estatisticas.solicitacoesHoje }}</h3>
+            <p>Solicitações do dia</p>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon dados">
-            <i class="fas fa-database"></i>
+            <i class="fas fa-route"></i>
           </div>
           <div class="stat-info">
-            <h3>{{ estatisticas.armazenamento }} GB</h3>
-            <p>Armazenamento usado</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel-section card" id="pendencias-section" *ngIf="isSection('pendencias')">
-      <header class="section-header">
-        <div>
-          <h2>Pendências recentes</h2>
-          <p>Eventos que requerem atenção do administrador.</p>
-        </div>
-      </header>
-      <div class="activity-list">
-        <div class="activity-item" *ngFor="let atividade of atividades">
-          <div class="activity-icon" [ngClass]="atividade.tipo">
-            <i [class]="atividade.icone"></i>
-          </div>
-          <div class="activity-info">
-            <h4>{{ atividade.titulo }}</h4>
-            <p>{{ atividade.descricao }}</p>
-            <span class="activity-time">{{ atividade.tempo }}</span>
+            <h3>{{ estatisticas.transferenciasEmCurso }}</h3>
+            <p>Transferências em curso</p>
           </div>
         </div>
       </div>
@@ -85,8 +65,8 @@
     <section class="panel-section card" id="acoes-section" *ngIf="isSection('acoes') && quickActions.length">
       <header class="section-header">
         <div>
-          <h2>Ações rápidas</h2>
-          <p>Atalhos sugeridos para manter o ambiente sob controle.</p>
+          <h2>Atendimentos rápidos</h2>
+          <p>Fluxos ágeis para as rotinas da secretaria.</p>
         </div>
       </header>
       <div class="action-grid">
@@ -100,15 +80,99 @@
       </div>
     </section>
 
-    <section class="panel-section card" id="usuarios-section" *ngIf="isSection('usuarios')">
+    <app-painel-pre-matricula
+      [visible]="isSection('preMatriculas')"
+      [preMatriculas]="preMatriculas"
+      [statusLabels]="statusLabels"
+      [statusClasses]="statusClasses"
+      [filtro]="filtroPreMatricula"
+      [selecionada]="preMatriculaSelecionada"
+      (filtroChange)="filtroPreMatricula = $event"
+      (selecionar)="selecionarPreMatricula($event)"
+      (statusChange)="atualizarStatus($event)"
+      (documentoChange)="atualizarDocumento($event.documento, $event.status)"
+      (observacoesChange)="atualizarObservacoes($event)"
+      (concluir)="concluirMatricula()"
+      (indeferir)="atualizarStatus('indeferido')"
+    ></app-painel-pre-matricula>
+
+    <app-painel-transferencias
+      [visible]="isSection('transferencias')"
+      [solicitacoes]="solicitacoesTransferencia"
+      [destinos]="destinosTransferencia"
+      [historico]="historicoTransferencias"
+      [selecionada]="transferenciaSelecionada"
+      [statusLabels]="transferenciaStatusLabels"
+      [statusClasses]="transferenciaStatusClasses"
+      (selecionar)="selecionarTransferencia($event)"
+      (destinoChange)="atualizarDestinoTransferencia($event)"
+      (justificativaChange)="atualizarJustificativaTransferencia($event)"
+      (confirmar)="confirmarTransferencia()"
+      (cancelar)="cancelarTransferencia()"
+    ></app-painel-transferencias>
+
+    <app-painel-gestao-turmas
+      [visible]="isSection('turmas')"
+      [turmas]="turmasSecretaria"
+      [professores]="professoresDisponiveis"
+      [alunosDisponiveis]="alunosDisponiveisTurma"
+      [selecionada]="turmaSecretariaSelecionada"
+      (selecionarTurma)="selecionarTurmaSecretaria($event)"
+      (criarTurma)="criarTurmaSecretaria($event)"
+    ></app-painel-gestao-turmas>
+
+    <app-painel-avisos-materiais
+      [visible]="isSection('avisos')"
+      [avisos]="avisosMateriais"
+      [turmasDestino]="turmasSecretaria"
+      [alunosDestino]="alunosDisponiveisTurma"
+      (salvarAviso)="salvarAvisoMaterial($event)"
+    ></app-painel-avisos-materiais>
+
+    <app-painel-lancamento-professor
+      [visible]="isSection('academicoProfessor')"
+      [disciplinas]="lancamentoProfessorDisciplinas"
+      [disciplinaSelecionada]="disciplinaLancamentoSelecionada"
+      [turmaSelecionada]="turmaLancamentoSelecionada"
+      [frequenciaOptions]="frequenciaOptions"
+      (disciplinaChange)="selecionarDisciplinaLancamento($event)"
+      (turmaChange)="selecionarTurmaLancamento($event)"
+      (notaChange)="atualizarNotaLancamento($event)"
+      (frequenciaChange)="atualizarFrequenciaLancamento($event)"
+    ></app-painel-lancamento-professor>
+
+    <app-painel-lancamento-alunos
+      [visible]="isSection('academicoAlunos')"
+      [alunos]="academicoAlunos"
+      [selecionado]="alunoAcademicoSelecionado"
+      (selecionarAluno)="selecionarAlunoAcademico($event)"
+    ></app-painel-lancamento-alunos>
+
+    <app-painel-dados-academicos
+      [visible]="isSection('dadosAcademicos')"
+      [alunos]="dadosAcademicosAlunos"
+      [selecionado]="alunoDadosSelecionado"
+      (selecionarAluno)="selecionarAlunoDados($event)"
+    ></app-painel-dados-academicos>
+
+    <app-painel-eventos
+      [visible]="isSection('eventos')"
+      [eventos]="eventos"
+      [categorias]="categoriasEventos"
+      [icones]="opcoesIconesEventos"
+      (salvar)="handleSalvarEvento($event)"
+      (remover)="handleRemoverEvento($event)"
+    ></app-painel-eventos>
+
+    <section class="panel-section card" id="usuarios-section" *ngIf="isSection('cadastros')">
       <header class="section-header">
         <div>
-          <h2>Gestão de usuários</h2>
-          <p>Pesquise, filtre e mantenha os perfis atualizados.</p>
+          <h2>Cadastros e perfis</h2>
+          <p>Atualize vínculos de alunos, responsáveis e colaboradores.</p>
         </div>
         <button class="btn-primary" (click)="novoUsuario()">
           <i class="fas fa-plus"></i>
-          Novo usuário
+          Novo cadastro
         </button>
       </header>
 

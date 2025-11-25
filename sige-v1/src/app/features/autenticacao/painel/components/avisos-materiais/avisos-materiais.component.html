@@ -1,0 +1,153 @@
+<section class="panel-section card" id="avisos-section" *ngIf="visible">
+  <header class="section-header">
+    <div>
+      <h2>Avisos e materiais</h2>
+      <p>Envie comunicados oficiais com anexos para turmas, para toda a escola ou de forma individual.</p>
+    </div>
+  </header>
+
+  <div class="avisos-layout">
+    <article class="aviso-form card-light">
+      <h3>Novo aviso</h3>
+      <form (ngSubmit)="submit()" autocomplete="off">
+        <label>
+          <span>Título do aviso</span>
+          <input type="text" name="titulo" [(ngModel)]="form.titulo" placeholder="Ex.: Avaliação de matemática" required>
+        </label>
+
+        <label>
+          <span>Mensagem</span>
+          <textarea name="descricao" rows="4" [(ngModel)]="form.descricao" placeholder="Detalhe o comunicado" required></textarea>
+        </label>
+
+        <div class="destinos">
+          <span>Enviar para</span>
+          <div class="destino-options">
+            <label>
+              <input type="radio" name="destino" value="turma" [checked]="form.destinoTipo === 'turma'" (change)="atualizarDestino('turma')">
+              Turmas específicas
+            </label>
+            <label>
+              <input type="radio" name="destino" value="escola" [checked]="form.destinoTipo === 'escola'" (change)="atualizarDestino('escola')">
+              Toda escola
+            </label>
+            <label>
+              <input type="radio" name="destino" value="individual" [checked]="form.destinoTipo === 'individual'" (change)="atualizarDestino('individual')">
+              Individualmente
+            </label>
+          </div>
+        </div>
+
+        <div class="destino-extra" *ngIf="form.destinoTipo === 'turma'">
+          <p>Selecione as turmas que receberão o aviso.</p>
+          <div class="multi-list">
+            <label *ngFor="let turma of turmasDestino">
+              <input
+                type="checkbox"
+                [checked]="form.turmasDestino?.includes(turma.id)"
+                (change)="toggleLista('turmasDestino', turma.id)"
+              >
+              {{ turma.nome }} ({{ turma.turno }})
+            </label>
+          </div>
+        </div>
+
+        <div class="destino-extra" *ngIf="form.destinoTipo === 'individual'">
+          <p>Selecione os alunos/responsáveis que receberão o aviso.</p>
+          <div class="multi-list">
+            <label *ngFor="let aluno of alunosDestino">
+              <input
+                type="checkbox"
+                [checked]="form.destinatarios?.includes(aluno.id)"
+                (change)="toggleLista('destinatarios', aluno.id)"
+              >
+              {{ aluno.nome }} • {{ aluno.serie }}
+            </label>
+          </div>
+        </div>
+
+        <div class="anexos">
+          <div class="anexos-header">
+            <span>Anexos</span>
+            <small>PDFs, imagens ou links úteis.</small>
+          </div>
+          <div class="anexos-form">
+            <input type="text" placeholder="Descrição" [(ngModel)]="novoAnexo.nome" name="anexoNome">
+            <select [(ngModel)]="novoAnexo.tipo" name="anexoTipo">
+              <option value="pdf">PDF</option>
+              <option value="imagem">Imagem</option>
+              <option value="link">Link</option>
+            </select>
+            <input type="text" placeholder="URL" [(ngModel)]="novoAnexo.url" name="anexoUrl">
+            <button type="button" (click)="adicionarAnexo()">Adicionar</button>
+          </div>
+          <ul class="anexos-list" *ngIf="form.anexos.length">
+            <li *ngFor="let anexo of form.anexos">
+              <span class="badge" [ngClass]="anexo.tipo">{{ anexo.tipo.toUpperCase() }}</span>
+              <span>{{ anexo.nome }}</span>
+              <button type="button" (click)="removerAnexo(anexo.id)">
+                <i class="fas fa-times"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="!isFormValido">
+          <i class="fas fa-paper-plane"></i>
+          Enviar aviso
+        </button>
+      </form>
+    </article>
+
+    <section class="avisos-feed">
+      <header class="feed-header">
+        <div>
+          <h3>Avisos publicados</h3>
+          <p>Materiais ficam disponíveis para alunos e responsáveis.</p>
+        </div>
+        <div class="filter-group">
+          <button type="button" [class.active]="filtroDestino === 'todos'" (click)="filtroDestino = 'todos'">Todos</button>
+          <button type="button" [class.active]="filtroDestino === 'turma'" (click)="filtroDestino = 'turma'">Turmas</button>
+          <button type="button" [class.active]="filtroDestino === 'escola'" (click)="filtroDestino = 'escola'">Escola</button>
+          <button type="button" [class.active]="filtroDestino === 'individual'" (click)="filtroDestino = 'individual'">Individual</button>
+        </div>
+      </header>
+
+      <div class="aviso-card" *ngFor="let aviso of avisosFiltrados">
+        <header>
+          <div>
+            <h4>{{ aviso.titulo }}</h4>
+            <small>Enviado por {{ aviso.autor }} em {{ aviso.dataEnvio | date:'dd/MM/yyyy HH:mm' }}</small>
+          </div>
+          <span class="destino-pill" [ngClass]="aviso.destinoTipo">
+            {{ aviso.destinoTipo === 'turma' ? 'Turmas' : aviso.destinoTipo === 'escola' ? 'Escola' : 'Individual' }}
+          </span>
+        </header>
+        <p>{{ aviso.descricao }}</p>
+        <div class="destino-resumo" *ngIf="aviso.destinoTipo === 'turma' && aviso.turmasDestino?.length">
+          <strong>Turmas:</strong>
+          <span>{{ aviso.turmasDestino?.length || 0 }} selecionadas</span>
+        </div>
+        <div class="destino-resumo" *ngIf="aviso.destinoTipo === 'individual' && aviso.destinatarios?.length">
+          <strong>Destinatários:</strong>
+          <span>{{ aviso.destinatarios?.length || 0 }} contatos</span>
+        </div>
+        <ul class="anexos-feed" *ngIf="aviso.anexos.length">
+          <li *ngFor="let anexo of aviso.anexos">
+            <i class="fas" [ngClass]="{
+              'fa-file-pdf': anexo.tipo === 'pdf',
+              'fa-image': anexo.tipo === 'imagem',
+              'fa-link': anexo.tipo === 'link'
+            }"></i>
+            <a [href]="anexo.url" target="_blank" rel="noopener">{{ anexo.nome }}</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="empty-state" *ngIf="!avisosFiltrados.length">
+        <i class="fas fa-bullhorn"></i>
+        <p>Nenhum aviso encontrado para o filtro selecionado.</p>
+      </div>
+    </section>
+  </div>
+</section>

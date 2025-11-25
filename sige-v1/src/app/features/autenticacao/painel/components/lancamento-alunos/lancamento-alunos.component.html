@@ -1,0 +1,133 @@
+<section class="panel-section card" id="academico-alunos-section" *ngIf="visible">
+  <header class="section-header">
+    <div>
+      <h2>Boletim e frequência</h2>
+      <p>Consulte boletim, frequência consolidada e histórico de notas por aluno.</p>
+    </div>
+  </header>
+
+  <div class="alunos-grid">
+    <aside class="alunos-list">
+      <h3>Alunos</h3>
+      <p>Selecione o estudante para visualizar os registros.</p>
+      <div class="alunos-scroll">
+        <button
+          type="button"
+          class="aluno-item"
+          *ngFor="let aluno of alunos"
+          [class.active]="selecionado?.id === aluno.id"
+          (click)="selectAluno(aluno.id)"
+        >
+          <div class="avatar-mini">{{ aluno.nome.charAt(0) }}</div>
+          <div>
+            <strong>{{ aluno.nome }}</strong>
+            <small>{{ aluno.turma }}</small>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <div class="aluno-content" *ngIf="selecionado as aluno; else selecioneAluno">
+      <div class="aluno-header">
+        <div>
+          <h3>{{ aluno.nome }}</h3>
+          <p>{{ aluno.turma }}</p>
+        </div>
+        <div class="aluno-indicadores">
+          <div>
+            <span>Média geral</span>
+            <strong>{{ mediaGeral(aluno) | number:'1.1-1' }}</strong>
+          </div>
+          <div>
+            <span>Atualizado em</span>
+            <strong>
+              {{ aluno.boletim.length ? (aluno.boletim[0].ultimaAtualizacao | date:'dd/MM/yyyy') : '--' }}
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="academico-layout">
+        <section class="info-card boletim-card">
+          <header>
+            <div>
+              <h4>Boletim</h4>
+              <span>{{ aluno.boletim.length }} disciplinas registradas</span>
+            </div>
+            <div class="legendas">
+              <span class="status-pill excelente">Excelente</span>
+              <span class="status-pill regular">Regular</span>
+              <span class="status-pill atencao">Atenção</span>
+            </div>
+          </header>
+          <div class="boletim-list" role="list">
+            <div class="boletim-row" *ngFor="let disciplina of aluno.boletim" role="listitem">
+              <div class="disciplina-meta">
+                <strong>{{ disciplina.nome }}</strong>
+                <small>Atualizado {{ disciplina.ultimaAtualizacao | date:'dd/MM' }}</small>
+              </div>
+              <div class="disciplina-valor">
+                <span class="nota">{{ disciplina.media | number:'1.1-1' }}</span>
+                <span class="status-pill" [ngClass]="disciplina.situacao">
+                  {{ disciplina.situacao | titlecase }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="academico-side">
+          <article class="info-card freq-card">
+            <header>
+              <h4>Frequência</h4>
+              <span>Últimos meses</span>
+            </header>
+            <div class="freq-list">
+              <div class="freq-row" *ngFor="let freq of aluno.frequencia">
+                <div class="freq-meta">
+                  <strong>{{ freq.periodo }}</strong>
+                  <small>{{ freq.percentual >= 95 ? 'Excelente' : freq.percentual >= 90 ? 'Regular' : 'Atenção' }}</small>
+                </div>
+                <div class="freq-bar">
+                  <div
+                    class="freq-bar__value"
+                    [class.alerta]="freq.percentual < 90"
+                    [style.width.%]="freq.percentual"
+                  ></div>
+                </div>
+                <span class="badge" [ngClass]="{ sucesso: freq.percentual >= 95, alerta: freq.percentual < 90 }">
+                  {{ freq.percentual | number:'1.0-0' }}%
+                </span>
+              </div>
+            </div>
+          </article>
+
+          <article class="info-card timeline-card">
+            <header>
+              <h4>Histórico de notas</h4>
+              <span>Registros recentes</span>
+            </header>
+            <div class="timeline">
+              <div class="timeline-row" *ngFor="let registro of aluno.historicoNotas">
+                <div class="timeline-dot"></div>
+                <div>
+                  <strong>{{ registro.etapa }}</strong>
+                  <p>{{ registro.descricao || 'Avaliação registrada' }}</p>
+                  <small>{{ registro.data | date:'dd/MM/yyyy' }}</small>
+                </div>
+                <span class="badge">{{ registro.nota | number:'1.1-1' }}</span>
+              </div>
+            </div>
+          </article>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #selecioneAluno>
+    <div class="empty-state">
+      <i class="fas fa-user-graduate"></i>
+      <p>Selecione um aluno para acompanhar boletim e frequência.</p>
+    </div>
+  </ng-template>
+</section>

@@ -1,0 +1,136 @@
+<section class="panel-section card" id="academico-professores-section" *ngIf="visible">
+  <header class="section-header">
+    <div>
+      <h2>Lançamento acadêmico</h2>
+      <p>Selecione a disciplina e a turma para registrar notas e frequência do dia.</p>
+    </div>
+  </header>
+
+  <div class="lancamento-prof-grid">
+    <aside class="disciplinas-list">
+      <h3>Disciplinas</h3>
+      <p>Escolha qual disciplina deseja lançar.</p>
+      <div class="disciplinas-scroll">
+        <button
+          type="button"
+          class="disciplina-item"
+          *ngFor="let disciplina of disciplinas"
+          [class.active]="disciplinaSelecionada?.id === disciplina.id"
+          (click)="selectDisciplina(disciplina.id)"
+        >
+          <div>
+            <strong>{{ disciplina.nome }}</strong>
+            <span>{{ disciplina.serie }}</span>
+          </div>
+          <span class="badge" [ngClass]="{ warning: getPendentes(disciplina) > 0 }">
+            {{ getPendentes(disciplina) }} pendências
+          </span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="lancamento-content" *ngIf="disciplinaSelecionada; else selecioneDisciplina">
+      <div class="turmas-tabs" *ngIf="disciplinaSelecionada?.turmas?.length; else semTurmas">
+        <button
+          type="button"
+          class="turma-pill"
+          *ngFor="let turma of disciplinaSelecionada?.turmas"
+          [class.active]="turmaSelecionada?.id === turma.id"
+          (click)="selectTurma(turma.id)"
+        >
+          <span>{{ turma.nome }}</span>
+          <small> - {{ turma.turno }} • {{ turma.alunos.length }} alunos</small>
+        </button>
+      </div>
+
+      <ng-template #semTurmas>
+        <div class="empty-state">
+          <i class="fas fa-triangle-exclamation"></i>
+          <p>Nenhuma turma está vinculada a esta disciplina no momento.</p>
+        </div>
+      </ng-template>
+
+        <div class="turma-detalhes" *ngIf="turmaSelecionada; else selecioneTurma">
+        <div class="turma-meta">
+          <div>
+            <h4>{{ turmaSelecionada!.nome }}</h4>
+            <p>Registro do dia {{ turmaSelecionada!.dataReferencia | date:'dd/MM/yyyy' }}</p>
+          </div>
+          <div class="meta-tags">
+            <span class="tag success">{{ totalLancados(turmaSelecionada) }} lançados</span>
+            <span class="tag warning">{{ turmaPendencias(turmaSelecionada) }} pendentes</span>
+          </div>
+        </div>
+
+        <div class="tabela-wrapper" *ngIf="turmaSelecionada?.alunos?.length; else turmaSemAlunos">
+          <table>
+            <thead>
+              <tr>
+                <th>Aluno</th>
+                <th>Nota</th>
+                <th>Frequência</th>
+                <th>Última atualização</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let aluno of turmaSelecionada?.alunos">
+                <td>
+                  <div class="aluno-info">
+                    <div class="avatar-mini">{{ aluno.nome.charAt(0) }}</div>
+                    <div>
+                      <strong>{{ aluno.nome }}</strong>
+                      <small *ngIf="aluno.observacao">{{ aluno.observacao }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    [ngModel]="aluno.nota ?? ''"
+                    (ngModelChange)="atualizarNota(aluno.id, $event)"
+                    placeholder="--"
+                  >
+                </td>
+                <td>
+                  <select
+                    [ngModel]="aluno.frequencia ?? ''"
+                    (ngModelChange)="atualizarFrequencia(aluno.id, $event)"
+                  >
+                    <option value="">Selecionar</option>
+                    <option *ngFor="let freq of frequenciaOptions" [value]="freq.value">{{ freq.label }}</option>
+                  </select>
+                </td>
+                <td>
+                  {{ aluno.ultimaAtualizacao ? (aluno.ultimaAtualizacao | date:'dd/MM HH:mm') : '—' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #turmaSemAlunos>
+          <div class="empty-state">
+            <i class="fas fa-users-slash"></i>
+            <p>Adicione alunos à turma para iniciar os lançamentos.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #selecioneDisciplina>
+    <div class="empty-state">
+      <i class="fas fa-book"></i>
+      <p>Selecione uma disciplina para visualizar as turmas disponíveis.</p>
+    </div>
+  </ng-template>
+
+  <ng-template #selecioneTurma>
+    <div class="empty-state">
+      <i class="fas fa-chalkboard-user"></i>
+      <p>Escolha uma turma para começar a lançar notas e frequência.</p>
+    </div>
+  </ng-template>
+</section>

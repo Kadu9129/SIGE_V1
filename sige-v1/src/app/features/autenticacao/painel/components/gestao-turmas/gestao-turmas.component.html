@@ -1,0 +1,158 @@
+<section class="panel-section card" id="turmas-section" *ngIf="visible">
+  <header class="section-header">
+    <div>
+      <h2>Gestão de turmas</h2>
+      <p>Crie turmas, atribua professores e organize a lista de alunos vinculados.</p>
+    </div>
+  </header>
+
+  <div class="turmas-layout">
+    <div class="turmas-col">
+      <article class="turmas-list">
+        <header>
+          <div>
+            <h3>Turmas cadastradas</h3>
+            <p>Selecione para visualizar os detalhes.</p>
+          </div>
+          <span class="tag">{{ turmas.length }} turmas</span>
+        </header>
+        <div class="turmas-scroll">
+          <button
+            type="button"
+            class="turma-item"
+            *ngFor="let turma of turmas"
+            [class.active]="selecionada?.id === turma.id"
+            (click)="selectTurma(turma.id)"
+          >
+            <div>
+              <strong>{{ turma.nome }}</strong>
+              <small>{{ turma.etapa }} • {{ turma.turno }}</small>
+            </div>
+            <div class="turma-meta">
+              <span>{{ turma.alunos.length }}/{{ turma.capacidade }} alunos</span>
+              <span class="status" [class.planejado]="turma.status === 'planejado'">
+                {{ turma.status === 'ativo' ? 'Ativa' : 'Planejada' }}
+              </span>
+            </div>
+          </button>
+        </div>
+      </article>
+
+      <article class="turma-detalhe" *ngIf="selecionada as turma; else selecioneTurma">
+        <header>
+          <div>
+            <h3>{{ turma.nome }}</h3>
+            <p>{{ turma.etapa }} • {{ turma.turno }}</p>
+          </div>
+          <div class="turma-tags">
+            <span class="tag">Professor: {{ turma.professor.nome }}</span>
+            <span class="tag light">Capacidade {{ turma.capacidade }}</span>
+          </div>
+        </header>
+
+        <div class="turma-professor">
+          <div>
+            <span>Professor responsável</span>
+            <strong>{{ turma.professor.nome }}</strong>
+            <small>{{ turma.professor.especialidade }}</small>
+          </div>
+          <div>
+            <span>Sala</span>
+            <strong>{{ turma.sala || 'A definir' }}</strong>
+            <small>Status: {{ turma.status === 'ativo' ? 'Ativa' : 'Planejada' }}</small>
+          </div>
+        </div>
+
+        <div class="alunos-grid">
+          <h4>Alunos matriculados ({{ turma.alunos.length }})</h4>
+          <ul>
+            <li *ngFor="let aluno of turma.alunos">
+              <div class="avatar-mini">{{ aluno.nome.charAt(0) }}</div>
+              <div>
+                <strong>{{ aluno.nome }}</strong>
+                <small>{{ aluno.serie }}</small>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </article>
+      <ng-template #selecioneTurma>
+        <article class="turma-detalhe placeholder">
+          <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <p>Selecione uma turma para visualizar professores e alunos.</p>
+          </div>
+        </article>
+      </ng-template>
+    </div>
+
+    <article class="turma-form">
+      <h3>Criar nova turma</h3>
+      <form (ngSubmit)="submit()" autocomplete="off">
+        <label>
+          <span>Nome da turma</span>
+          <input type="text" name="nome" [(ngModel)]="form.nome" placeholder="Ex.: 7º ano B" required>
+        </label>
+
+        <label>
+          <span>Etapa/Série</span>
+          <input type="text" name="etapa" [(ngModel)]="form.etapa" placeholder="Fundamental II" required>
+        </label>
+
+        <div class="form-row">
+          <label>
+            <span>Turno</span>
+            <select name="turno" [(ngModel)]="form.turno">
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Capacidade</span>
+            <input type="number" min="10" max="50" name="capacidade" [(ngModel)]="form.capacidade">
+          </label>
+        </div>
+
+        <label>
+          <span>Professor responsável</span>
+          <select name="professor" [(ngModel)]="form.professorId" required>
+            <option value="" disabled>Selecione o professor</option>
+            <option *ngFor="let prof of professores" [value]="prof.id">
+              {{ prof.nome }} • {{ prof.especialidade }}
+            </option>
+          </select>
+        </label>
+
+        <div class="alunos-selector">
+          <div class="selector-header">
+            <div>
+              <span>Alunos</span>
+              <p>Selecione os alunos que farão parte da turma.</p>
+            </div>
+            <span class="tag">{{ form.alunoIds.length }} selecionados</span>
+          </div>
+          <div class="alunos-scroll">
+            <label class="aluno-option" *ngFor="let aluno of alunosDisponiveis">
+              <input
+                type="checkbox"
+                [checked]="isAlunoSelecionado(aluno.id)"
+                (change)="toggleAluno(aluno.id)"
+              >
+              <div>
+                <strong>{{ aluno.nome }}</strong>
+                <small>{{ aluno.serie }}</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="!isFormValido">
+          <i class="fas fa-plus"></i>
+          Criar turma
+        </button>
+      </form>
+    </article>
+  </div>
+</section>

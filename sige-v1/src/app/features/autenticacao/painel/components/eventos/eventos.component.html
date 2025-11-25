@@ -1,0 +1,100 @@
+<section class="panel-section card" id="eventos-section" *ngIf="visible">
+  <header class="section-header">
+    <div>
+      <h2>Eventos institucionais</h2>
+      <p>Gerencie o calendário oficial com comunicados, encontros e atividades especiais.</p>
+    </div>
+    <div class="eventos-filtros">
+      <input type="search" placeholder="Buscar por título ou descrição" [(ngModel)]="busca">
+      <select [(ngModel)]="filtroCategoria">
+        <option value="todos">Todas as categorias</option>
+        <option *ngFor="let categoria of categorias" [value]="categoria">{{ categoria }}</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="eventos-grid">
+    <form class="evento-form" (ngSubmit)="submitForm()" #eventoForm="ngForm">
+      <div class="form-header">
+        <h3>{{ editando ? 'Editar evento' : 'Novo evento' }}</h3>
+        <button type="button" class="link-button" *ngIf="editando" (click)="resetarFormulario()">
+          Cancelar edição
+        </button>
+      </div>
+
+      <label>
+        Título do evento
+        <input type="text" name="titulo" [(ngModel)]="formData.titulo" required>
+      </label>
+
+      <div class="form-row">
+        <label>
+          Data
+          <input type="date" name="data" [(ngModel)]="formData.data" required>
+        </label>
+        <label>
+          Categoria
+          <select name="categoria" [(ngModel)]="formData.categoria" required>
+            <option *ngFor="let categoria of categorias" [value]="categoria">{{ categoria }}</option>
+          </select>
+        </label>
+      </div>
+
+      <label>
+        Ícone
+        <select name="icone" [(ngModel)]="formData.icone">
+          <option *ngFor="let icone of icones" [value]="icone.value">{{ icone.label }}</option>
+        </select>
+      </label>
+
+      <label>
+        Descrição
+        <textarea name="descricao" rows="4" [(ngModel)]="formData.descricao" required></textarea>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-save"></i>
+          {{ editando ? 'Salvar alterações' : 'Adicionar evento' }}
+        </button>
+        <button type="button" class="btn-secondary" (click)="resetarFormulario()" [disabled]="!formData.titulo && !formData.descricao">
+          Limpar
+        </button>
+      </div>
+    </form>
+
+    <div class="eventos-list" *ngIf="eventosFiltrados.length; else eventosVazios">
+      <article class="evento-card" *ngFor="let evento of eventosFiltrados; trackBy: trackById">
+        <div class="evento-icon">
+          <i [ngClass]="iconClasses(evento.icone)" aria-hidden="true"></i>
+        </div>
+        <div class="evento-info">
+          <div class="evento-head">
+            <h3>{{ evento.titulo }}</h3>
+            <span class="tag">{{ evento.categoria }}</span>
+          </div>
+          <p>{{ evento.descricao }}</p>
+          <div class="evento-meta">
+            <span><i class="fas fa-calendar-day"></i> {{ evento.data | date:'dd/MM/yyyy' }}</span>
+            <div class="evento-actions">
+              <button type="button" class="btn-action edit" (click)="selecionarParaEdicao(evento)">
+                <i class="fas fa-edit"></i>
+                Editar
+              </button>
+              <button type="button" class="btn-action delete" (click)="removerEvento(evento.id)">
+                <i class="fas fa-trash"></i>
+                Remover
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+    <ng-template #eventosVazios>
+      <div class="empty-state">
+        <i class="fas fa-calendar-xmark"></i>
+        <p>Nenhum evento para o filtro atual.</p>
+      </div>
+    </ng-template>
+  </div>
+</section>

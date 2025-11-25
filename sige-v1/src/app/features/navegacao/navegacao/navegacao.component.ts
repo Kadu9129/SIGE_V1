@@ -39,20 +39,31 @@ export class NavegacaoComponent implements OnInit {
       title: 'Principal',
       items: [
         { label: 'Dashboard', route: '/menu', icon: 'fas fa-th-large', roles: ALL_ROLES },
-        { label: 'Painel Administrativo', route: '/painel', icon: 'fas fa-chart-pie', roles: ['admin', 'diretor'] },
+        { label: 'Secretaria Escolar', route: '/painel', icon: 'fas fa-building-columns', roles: ['admin', 'diretor'] },
+        { label: 'Gestão de turmas', route: '/painel', icon: 'fas fa-users-gear', roles: ['admin', 'diretor'], sectionId: 'turmas-section' },
+        { label: 'Avisos e materiais', route: '/painel', icon: 'fas fa-bullhorn', roles: ['admin', 'diretor'], sectionId: 'avisos-section' },
+        { label: 'Dados acadêmicos', route: '/painel', icon: 'fas fa-folder-open', roles: ['admin', 'diretor'], sectionId: 'dados-academicos-section' },
         { label: 'Área do Professor', route: '/professor', icon: 'fas fa-chalkboard-teacher', roles: ['professor'] },
         { label: 'Área do Aluno', route: '/aluno', icon: 'fas fa-user-graduate', roles: ['aluno'] },
         { label: 'Área do Responsável', route: '/responsavel', icon: 'fas fa-users', roles: ['responsavel'] }
       ]
     },
     {
-      title: 'Administração',
+      title: 'Secretaria',
       items: [
-        { label: 'Visão geral', route: '/painel', icon: 'fas fa-chart-pie', roles: ['admin', 'diretor'], sectionId: 'top' },
+        { label: 'Visão geral', route: '/painel', icon: 'fas fa-building-columns', roles: ['admin', 'diretor'], sectionId: 'top' },
         { label: 'Indicadores', route: '/painel', icon: 'fas fa-gauge-high', roles: ['admin', 'diretor'], sectionId: 'indicadores-section' },
         { label: 'Pendências', route: '/painel', icon: 'fas fa-clipboard-check', roles: ['admin', 'diretor'], sectionId: 'pendencias-section' },
-        { label: 'Ações rápidas', route: '/painel', icon: 'fas fa-bolt', roles: ['admin', 'diretor'], sectionId: 'acoes-section' },
-        { label: 'Gestão de usuários', route: '/painel', icon: 'fas fa-users-cog', roles: ['admin', 'diretor'], sectionId: 'usuarios-section' }
+        { label: 'Atendimentos', route: '/painel', icon: 'fas fa-bolt', roles: ['admin', 'diretor'], sectionId: 'acoes-section' },
+        { label: 'Pré-matrícula', route: '/painel', icon: 'fas fa-user-plus', roles: ['admin', 'diretor'], sectionId: 'pre-matriculas-section' },
+        { label: 'Transferências', route: '/painel', icon: 'fas fa-route', roles: ['admin', 'diretor'], sectionId: 'transferencias-section' },
+        { label: 'Gestão de turmas', route: '/painel', icon: 'fas fa-users-gear', roles: ['admin', 'diretor'], sectionId: 'turmas-section' },
+        { label: 'Avisos e materiais', route: '/painel', icon: 'fas fa-bullhorn', roles: ['admin', 'diretor'], sectionId: 'avisos-section' },
+        { label: 'Lançamento acadêmico', route: '/painel', icon: 'fas fa-chalkboard-user', roles: ['admin', 'diretor'], sectionId: 'academico-professores-section' },
+        { label: 'Boletim e frequência', route: '/painel', icon: 'fas fa-clipboard-user', roles: ['admin', 'diretor'], sectionId: 'academico-alunos-section' },
+        { label: 'Dados acadêmicos', route: '/painel', icon: 'fas fa-folder-open', roles: ['admin', 'diretor'], sectionId: 'dados-academicos-section' },
+        { label: 'Eventos', route: '/painel', icon: 'fas fa-calendar-days', roles: ['admin', 'diretor'], sectionId: 'eventos-section' },
+        { label: 'Cadastros', route: '/painel', icon: 'fas fa-id-card', roles: ['admin', 'diretor'], sectionId: 'usuarios-section' }
       ]
     }
   ];

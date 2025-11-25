@@ -1,0 +1,141 @@
+<section class="panel-section card" id="dados-academicos-section" *ngIf="visible">
+  <header class="section-header">
+    <div>
+      <h2>Dados acadêmicos</h2>
+      <p>Consulte histórico escolar, boletim consolidado, frequência mensal e média final por aluno.</p>
+    </div>
+  </header>
+
+  <div class="dados-layout">
+    <aside class="alunos-panel">
+      <h3>Alunos</h3>
+      <p>Selecione para detalhar os registros.</p>
+      <div class="alunos-scroll">
+        <button
+          type="button"
+          class="aluno-item"
+          *ngFor="let aluno of alunos"
+          [class.active]="selecionado?.id === aluno.id"
+          (click)="selectAluno(aluno.id)"
+        >
+          <div>
+            <strong>{{ aluno.nome }}</strong>
+            <small>{{ aluno.turma }}</small>
+          </div>
+          <span class="media">{{ aluno.mediaFinal | number:'1.1-1' }}</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="dados-content" *ngIf="selecionado as aluno; else selecioneAluno">
+      <div class="overview">
+        <div class="overview-card">
+          <span>Média final</span>
+          <strong>{{ aluno.mediaFinal | number:'1.1-1' }}</strong>
+          <small>{{ aluno.curso }}</small>
+        </div>
+        <div class="overview-card">
+          <span>Turma</span>
+          <strong>{{ aluno.turma }}</strong>
+          <small>{{ aluno.historico.length ? aluno.historico[0].ano : 'Atual' }}</small>
+        </div>
+        <div class="overview-card">
+          <span>Registros</span>
+          <strong>{{ aluno.historico.length }}</strong>
+          <small>Anos no histórico</small>
+        </div>
+      </div>
+
+      <div class="dados-grid">
+        <article class="dados-card">
+          <header>
+            <h4>Histórico escolar</h4>
+            <span>{{ aluno.historico.length }} registros</span>
+          </header>
+          <table>
+            <thead>
+              <tr>
+                <th>Ano</th>
+                <th>Série</th>
+                <th>Situação</th>
+                <th>Média</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let registro of aluno.historico">
+                <td>{{ registro.ano }}</td>
+                <td>{{ registro.serie }}</td>
+                <td>
+                  <span class="status" [class.aprovado]="registro.situacao === 'aprovado'">
+                    {{ registro.situacao | titlecase }}
+                  </span>
+                </td>
+                <td>{{ registro.mediaFinal | number:'1.1-1' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article class="dados-card">
+          <header>
+            <h4>Boletim</h4>
+            <span>{{ aluno.boletim.length }} disciplinas</span>
+          </header>
+          <table>
+            <thead>
+              <tr>
+                <th>Disciplina</th>
+                <th>Média</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let disciplina of aluno.boletim">
+                <td>{{ disciplina.nome }}</td>
+                <td>{{ disciplina.media | number:'1.1-1' }}</td>
+                <td>
+                  <span class="status" [ngClass]="disciplina.situacao">
+                    {{ disciplina.situacao | titlecase }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article class="dados-card">
+          <header>
+            <h4>Frequência mensal</h4>
+            <span>Últimos períodos</span>
+          </header>
+          <table>
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Percentual</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let freq of aluno.frequenciaMensal">
+                <td>{{ freq.periodo }}</td>
+                <td>
+                  <div class="barra">
+                    <div class="barra-valor" [style.width.%]="freq.percentual" [class.alerta]="freq.percentual < 90"></div>
+                  </div>
+                  <span>{{ freq.percentual | number:'1.0-0' }}%</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #selecioneAluno>
+    <div class="empty-state">
+      <i class="fas fa-graduation-cap"></i>
+      <p>Selecione um aluno para visualizar histórico, boletim e frequência.</p>
+    </div>
+  </ng-template>
+</section>

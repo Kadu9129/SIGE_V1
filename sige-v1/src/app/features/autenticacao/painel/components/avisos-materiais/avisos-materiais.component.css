@@ -1,0 +1,303 @@
+:host {
+  width: 100%;
+  display: block;
+}
+
+.avisos-layout {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+  gap: 24px;
+}
+
+.card-light {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.06);
+}
+
+.aviso-form h3 {
+  margin-top: 0;
+  color: #0f172a;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+label span,
+.destinos > span {
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+input[type="text"],
+textarea,
+select {
+  border-radius: 12px;
+  border: 1px solid #cbd5f5;
+  background: #f8fafc;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.destino-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.destino-options label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef2ff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #3730a3;
+}
+
+.destino-extra {
+  border: 1px dashed #cbd5f5;
+  border-radius: 16px;
+  padding: 12px;
+  background: #f9fbff;
+}
+
+.multi-list {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.multi-list label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.anexos {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 12px;
+  background: #fafbff;
+}
+
+.anexos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.anexos-form {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) 100px;
+  gap: 8px;
+}
+
+.anexos-form button {
+  border-radius: 12px;
+  border: none;
+  background: #4c7dff;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.anexos-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.anexos-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+.anexos-list button {
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+}
+
+.badge {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge.pdf {
+  background: rgba(239, 68, 68, 0.15);
+  color: #b91c1c;
+}
+
+.badge.imagem {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1d4ed8;
+}
+
+.badge.link {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  background: #4c7dff;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.avisos-feed {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.filter-group {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-group button {
+  border: 1px solid #cbd5f5;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: #475569;
+}
+
+.filter-group button.active {
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.aviso-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.aviso-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.destino-pill {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.destino-pill.turma {
+  background: rgba(99, 102, 241, 0.15);
+  color: #3730a3;
+}
+
+.destino-pill.escola {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.destino-pill.individual {
+  background: rgba(249, 115, 22, 0.15);
+  color: #9a3412;
+}
+
+.destino-resumo {
+  display: flex;
+  gap: 10px;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.anexos-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.anexos-feed li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.anexos-feed a {
+  color: #2563eb;
+}
+
+@media (max-width: 1024px) {
+  .avisos-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .anexos-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
