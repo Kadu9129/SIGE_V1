@@ -1,0 +1,116 @@
+<div class="aluno-area" *ngIf="!carregando; else carregandoTpl">
+  <ng-container *ngIf="aluno; else vazioTpl">
+    <!-- Cabeçalho do Perfil -->
+    <section class="perfil-header card">
+      <div class="avatar">
+        <ng-container *ngIf="aluno!.fotoPerfil; else avatarInicialTpl">
+          <img [src]="aluno!.fotoPerfil" alt="Foto do aluno" />
+        </ng-container>
+        <ng-template #avatarInicialTpl>
+          <div class="avatar-inicial">{{ aluno!.nomeCompleto.charAt(0) || '?' }}</div>
+        </ng-template>
+        <label class="upload-btn" for="fotoInput">Alterar foto</label>
+        <input id="fotoInput" type="file" accept="image/*" (change)="onFotoSelecionada($event)" />
+      </div>
+      <div class="perfil-info">
+        <h1 class="nome">{{ aluno!.nomeCompleto }}</h1>
+        <div class="meta">
+          <span class="tag">Matrícula: {{ aluno!.matricula }}</span>
+          <span class="tag" *ngIf="aluno!.status">Status: {{ aluno!.status }}</span>
+          <span class="tag" *ngIf="aluno!.nomeEscola">Escola: {{ aluno!.nomeEscola }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resumo Rápido -->
+    <section class="resumo-grid">
+      <div class="resumo card">
+        <div class="resumo-titulo">Turma Atual</div>
+        <div class="resumo-valor">{{ aluno!.matriculas?.[0]?.nomeTurma || '—' }}</div>
+        <div class="resumo-detalhe">Código: {{ aluno!.matriculas?.[0]?.codigoTurma || '—' }}</div>
+      </div>
+      <div class="resumo card">
+        <div class="resumo-titulo">Ano Letivo</div>
+        <div class="resumo-valor">{{ aluno!.matriculas?.[0]?.anoLetivo || '—' }}</div>
+        <div class="resumo-detalhe">Situação: {{ aluno!.matriculas?.[0]?.status || '—' }}</div>
+      </div>
+      <div class="resumo card">
+        <div class="resumo-titulo">Matrículas</div>
+        <div class="resumo-valor">{{ aluno!.matriculas?.length || 0 }}</div>
+        <div class="resumo-detalhe">Histórico registrado</div>
+      </div>
+    </section>
+
+    <!-- Endereço -->
+    <section class="secao card">
+      <div class="secao-header">
+        <h2>Endereço</h2>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div class="campo">
+            <label>Logradouro</label>
+            <div class="valor">{{ aluno!.endereco || '—' }}</div>
+          </div>
+          <div class="campo">
+            <label>Cidade</label>
+            <div class="valor">{{ aluno!.cidade || '—' }}</div>
+          </div>
+        </div>
+        <div>
+          <div class="campo">
+            <label>Estado</label>
+            <div class="valor">{{ aluno!.estado || '—' }}</div>
+          </div>
+          <div class="campo">
+            <label>CEP</label>
+            <div class="valor">{{ aluno!.cep || '—' }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Matrículas -->
+    <section class="secao card">
+      <div class="secao-header">
+        <h2>Matrículas</h2>
+      </div>
+      <div class="tabela-wrap" *ngIf="aluno!.matriculas?.length; else semMatriculasTpl">
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Nº Matrícula</th>
+              <th>Turma</th>
+              <th>Código</th>
+              <th>Ano</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of aluno!.matriculas">
+              <td>{{ m.numeroMatricula }}</td>
+              <td>{{ m.nomeTurma }}</td>
+              <td>{{ m.codigoTurma }}</td>
+              <td>{{ m.anoLetivo }}</td>
+              <td><span class="badge">{{ m.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #semMatriculasTpl>
+        <div class="msg-vazia">Nenhuma matrícula encontrada.</div>
+      </ng-template>
+    </section>
+  </ng-container>
+
+  <ng-template #vazioTpl>
+    <div class="msg-vazia">Informações do aluno não disponíveis.</div>
+  </ng-template>
+</div>
+
+<ng-template #carregandoTpl>
+  <div class="carregando">
+    <div class="spinner"></div>
+    <div>Carregando painel do aluno...</div>
+  </div>
+</ng-template>

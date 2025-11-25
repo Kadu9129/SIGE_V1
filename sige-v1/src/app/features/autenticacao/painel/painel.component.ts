@@ -1,16 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth.service';
+import { DashboardApiService, DashboardGeral } from '../../../core/services/dashboard-api.service';
+import { UsuariosApiService, Usuario } from '../../../core/services/usuarios-api.service';
 
-interface Usuario {
-  id: number;
-  nome: string;
-  email: string;
-  tipo: string;
-  status: string;
-  ultimoAcesso: Date;
-}
+// Usuario interface moved to usuarios-api.service import
 
 interface Estatisticas {
   usuariosAtivos: number;
@@ -28,33 +24,31 @@ interface Atividade {
   icone: string;
 }
 
-interface Configuracoes {
-  nomeInstituicao: string;
-  anoLetivo: number;
-  timezone: string;
-  autenticacaoDupla: boolean;
-  tempoSessao: number;
-  logAuditoria: boolean;
-  emailNotificacoes: boolean;
-  smsNotificacoes: boolean;
+interface QuickAction {
+  id: string;
+  label: string;
+  description: string;
+  icon: string;
+  handler: 'novoUsuario' | 'usuarios' | 'pendencias' | 'menuPrincipal';
 }
+
+type AdminSection = 'resumo' | 'indicadores' | 'pendencias' | 'acoes' | 'usuarios';
 
 @Component({
   selector: 'app-painel',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './painel.component.html',
-  styleUrl: './painel.component.css'
+  styleUrl: './painel.component.shell.css'
 })
 export class PainelComponent implements OnInit {
   usuario: any = null;
-  abaSelecionada = 'dashboard';
   
   estatisticas: Estatisticas = {
-    usuariosAtivos: 142,
-    sessoesAbertas: 23,
-    uptime: 99.8,
-    armazenamento: 45.2
+    usuariosAtivos: 0,
+    sessoesAbertas: 0,
+    uptime: 0,
+    armazenamento: 0
   };
 
   atividades: Atividade[] = [
@@ -95,99 +89,146 @@ export class PainelComponent implements OnInit {
   filtroUsuarios = '';
   filtroTipo = '';
 
-  usuarios: Usuario[] = [
+  usuarios: Usuario[] = [];
+  carregandoUsuarios = false;
+  carregandoDashboard = false;
+  dashboard: DashboardGeral | null = null;
+
+  quickActions: QuickAction[] = [
     {
-      id: 1,
-      nome: 'Administrador SIGE',
-      email: 'admin@sige.edu.br',
-      tipo: 'admin',
-      status: 'ativo',
-      ultimoAcesso: new Date()
+      id: 'novo-usuario',
+      label: 'Cadastrar usuário',
+      description: 'Abrir fluxo rápido para criação de usuários',
+      icon: 'fas fa-user-plus',
+      handler: 'novoUsuario'
     },
     {
-      id: 2,
-      nome: 'Prof. Ricardo Mendes',
-      email: 'ricardo.mendes@sige.edu.br',
-      tipo: 'professor',
-      status: 'ativo',
-      ultimoAcesso: new Date(Date.now() - 30 * 60 * 1000) // 30 min ago
+      id: 'filtrar-usuarios',
+      label: 'Filtrar usuários',
+      description: 'Ir direto para a grade e aplicar filtros',
+      icon: 'fas fa-filter',
+      handler: 'usuarios'
     },
     {
-      id: 3,
-      nome: 'Ana Silva Santos',
-      email: 'ana.santos@email.com',
-      tipo: 'aluno',
-      status: 'ativo',
-      ultimoAcesso: new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 hours ago
+      id: 'pendencias',
+      label: 'Ver pendências',
+      description: 'Revisar alertas ou atividades recentes',
+      icon: 'fas fa-clipboard-check',
+      handler: 'pendencias'
     },
     {
-      id: 4,
-      nome: 'Maria Santos',
-      email: 'maria.santos@email.com',
-      tipo: 'responsavel',
-      status: 'inativo',
-      ultimoAcesso: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
-    },
-    {
-      id: 5,
-      nome: 'Prof. Carmen Silva',
-      email: 'carmen.silva@sige.edu.br',
-      tipo: 'professor',
-      status: 'ativo',
-      ultimoAcesso: new Date(Date.now() - 15 * 60 * 1000) // 15 min ago
+      id: 'menu',
+      label: 'Menu principal',
+      description: 'Voltar para o hub com todos os módulos',
+      icon: 'fas fa-th-large',
+      handler: 'menuPrincipal'
     }
   ];
 
-  configuracoes: Configuracoes = {
-    nomeInstituicao: 'Colégio SIGE',
-    anoLetivo: 2024,
-    timezone: 'America/Sao_Paulo',
-    autenticacaoDupla: false,
-    tempoSessao: 60,
-    logAuditoria: true,
-    emailNotificacoes: true,
-    smsNotificacoes: false
+  selectedSection: AdminSection = 'resumo';
+
+  private readonly sectionFromParam: Record<string, AdminSection> = {
+    top: 'resumo',
+    'indicadores-section': 'indicadores',
+    'pendencias-section': 'pendencias',
+    'acoes-section': 'acoes',
+    'usuarios-section': 'usuarios'
   };
 
-  constructor(private router: Router) {}
+  private readonly paramFromSection: Record<AdminSection, string> = {
+    resumo: 'top',
+    indicadores: 'indicadores-section',
+    pendencias: 'pendencias-section',
+    acoes: 'acoes-section',
+    usuarios: 'usuarios-section'
+  };
+
+  constructor(
+    private authService: AuthService,
+    private dashService: DashboardApiService,
+    private usuariosApi: UsuariosApiService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.verificarAutenticacao();
     this.carregarUsuario();
+    this.carregarDashboard();
+    this.carregarUsuarios();
+    this.route.queryParamMap.subscribe(params => {
+      const sectionParam = params.get('section');
+      if (sectionParam && this.sectionFromParam[sectionParam]) {
+        this.selectedSection = this.sectionFromParam[sectionParam];
+      }
+    });
+  }
+
+  carregarDashboard(): void {
+    this.carregandoDashboard = true;
+    this.dashService.geral().subscribe({
+      next: data => {
+        this.dashboard = data;
+        this.estatisticas.usuariosAtivos = data.totalUsuarios;
+        this.estatisticas.sessoesAbertas = data.totalTurmas; // placeholder
+        this.estatisticas.uptime = 100; // estático MVP
+        this.estatisticas.armazenamento = data.totalAlunos; // placeholder
+      },
+      error: () => {},
+      complete: () => this.carregandoDashboard = false
+    });
+  }
+
+  carregarUsuarios(): void {
+    this.carregandoUsuarios = true;
+    this.usuariosApi.list(1, 15).subscribe({
+      next: lista => this.usuarios = lista,
+      error: () => {},
+      complete: () => this.carregandoUsuarios = false
+    });
   }
 
   verificarAutenticacao(): void {
-    const token = localStorage.getItem('sige_token');
-    if (!token) {
-      this.router.navigate(['/login']);
-      return;
+    if (!this.authService.isLoggedIn()) {
+      this.authService.logout();
     }
   }
 
   carregarUsuario(): void {
-    const userData = localStorage.getItem('sige_user');
-    if (userData) {
-      this.usuario = JSON.parse(userData);
-    }
-  }
-
-  selecionarAba(aba: string): void {
-    this.abaSelecionada = aba;
+    this.usuario = this.authService.getCurrentUser();
   }
 
   logout(): void {
     if (confirm('Tem certeza que deseja sair do sistema?')) {
-      localStorage.removeItem('sige_token');
-      localStorage.removeItem('sige_user');
-      this.router.navigate(['/login']);
+      this.authService.logout();
     }
+  }
+
+  get saudacao(): string {
+    const hora = new Date().getHours();
+    if (hora < 12) {
+      return 'Bom dia';
+    }
+    if (hora < 18) {
+      return 'Boa tarde';
+    }
+    return 'Boa noite';
+  }
+
+  get primeiroNome(): string {
+    return this.usuario?.nome?.split(' ')[0] ?? 'Administrador';
+  }
+
+  get ultimoAcesso(): string {
+    const acesso = this.usuario?.ultimoAcesso;
+    return acesso ? new Date(acesso).toLocaleString('pt-BR') : 'Não informado';
   }
 
   get usuariosFiltrados(): Usuario[] {
     return this.usuarios.filter(usuario => {
       const matchNome = usuario.nome.toLowerCase().includes(this.filtroUsuarios.toLowerCase());
       const matchEmail = usuario.email.toLowerCase().includes(this.filtroUsuarios.toLowerCase());
-      const matchTipo = this.filtroTipo === '' || usuario.tipo === this.filtroTipo;
+      const matchTipo = this.filtroTipo === '' || (usuario as any).tipo === this.filtroTipo;
       
       return (matchNome || matchEmail) && matchTipo;
     });
@@ -211,116 +252,36 @@ export class PainelComponent implements OnInit {
     }
   }
 
-  salvarConfiguracoes(): void {
-    // TODO: Implementar salvamento das configurações
-    console.log('Configurações a serem salvas:', this.configuracoes);
-    alert('Configurações salvas com sucesso!');
-  }
-
-  resetarConfiguracoes(): void {
-    if (confirm('Tem certeza que deseja restaurar as configurações padrão?')) {
-      this.configuracoes = {
-        nomeInstituicao: 'Colégio SIGE',
-        anoLetivo: 2024,
-        timezone: 'America/Sao_Paulo',
-        autenticacaoDupla: false,
-        tempoSessao: 60,
-        logAuditoria: true,
-        emailNotificacoes: true,
-        smsNotificacoes: false
-      };
-      alert('Configurações restauradas para os valores padrão!');
+  executarAcao(acao: QuickAction): void {
+    switch (acao.handler) {
+      case 'novoUsuario':
+        this.novoUsuario();
+        break;
+      case 'usuarios':
+        this.selectSection('usuarios');
+        break;
+      case 'pendencias':
+        this.selectSection('pendencias');
+        break;
+      case 'menuPrincipal':
+        this.router.navigate(['/menu']);
+        break;
     }
   }
 
-  gerarRelatorio(tipo: string): void {
-    console.log(`Gerando relatório: ${tipo}`);
-    
-    // Simular geração de relatório
-    const tiposRelatorio: { [key: string]: string } = {
-      'usuarios-ativos': 'Relatório de Usuários Ativos',
-      'log-acessos': 'Relatório de Log de Acessos',
-      'performance': 'Relatório de Performance do Sistema',
-      'erros': 'Relatório de Log de Erros'
-    };
-
-    const nomeRelatorio = tiposRelatorio[tipo] || 'Relatório';
-    
-    // Simular delay de geração
-    alert(`Iniciando geração do ${nomeRelatorio}...`);
-    
-    setTimeout(() => {
-      // TODO: Implementar geração real do relatório
-      alert(`${nomeRelatorio} gerado com sucesso! O arquivo será baixado em breve.`);
-      
-      // Simular download do relatório
-      this.downloadRelatorio(tipo);
-    }, 2000);
+  selectSection(section: AdminSection): void {
+    this.selectedSection = section;
+    const sectionParam = this.paramFromSection[section];
+    if (sectionParam) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { section: sectionParam },
+        replaceUrl: true
+      });
+    }
   }
 
-  private downloadRelatorio(tipo: string): void {
-    // Simular download de um arquivo
-    const content = this.gerarConteudoRelatorio(tipo);
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `relatorio-${tipo}-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    
-    // Limpar
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  }
-
-  private gerarConteudoRelatorio(tipo: string): string {
-    const dataAtual = new Date().toLocaleString('pt-BR');
-    
-    const conteudos: { [key: string]: string } = {
-      'usuarios-ativos': `RELATÓRIO DE USUÁRIOS ATIVOS - SIGE
-Gerado em: ${dataAtual}
-Total de usuários ativos: ${this.estatisticas.usuariosAtivos}
-
-=== DETALHES ===
-${this.usuarios.filter(u => u.status === 'ativo').map(u => 
-  `- ${u.nome} (${u.email}) - Tipo: ${u.tipo} - Último acesso: ${u.ultimoAcesso.toLocaleString('pt-BR')}`
-).join('\n')}`,
-
-      'log-acessos': `RELATÓRIO DE LOG DE ACESSOS - SIGE
-Gerado em: ${dataAtual}
-Período: Últimas 24 horas
-Total de acessos: 245
-
-=== ACESSOS RECENTES ===
-- admin@sige.edu.br - ${new Date().toLocaleString('pt-BR')} - IP: 192.168.1.10
-- ricardo.mendes@sige.edu.br - ${new Date(Date.now() - 30*60*1000).toLocaleString('pt-BR')} - IP: 192.168.1.15
-- ana.santos@email.com - ${new Date(Date.now() - 2*60*60*1000).toLocaleString('pt-BR')} - IP: 192.168.1.20`,
-
-      'performance': `RELATÓRIO DE PERFORMANCE DO SISTEMA - SIGE
-Gerado em: ${dataAtual}
-Uptime: ${this.estatisticas.uptime}%
-Sessões abertas: ${this.estatisticas.sessoesAbertas}
-Uso de armazenamento: ${this.estatisticas.armazenamento}GB
-
-=== MÉTRICAS ===
-- Tempo de resposta médio: 120ms
-- CPU: 15% de uso
-- Memória: 2.1GB / 8GB
-- Rede: 50Mbps disponível`,
-
-      'erros': `RELATÓRIO DE LOG DE ERROS - SIGE
-Gerado em: ${dataAtual}
-Período: Últimas 24 horas
-Total de erros: 3
-
-=== ERROS REGISTRADOS ===
-[ERROR] ${new Date(Date.now() - 4*60*60*1000).toLocaleString('pt-BR')} - Tentativa de acesso negada para IP 192.168.1.100
-[WARN] ${new Date(Date.now() - 6*60*60*1000).toLocaleString('pt-BR')} - Timeout na conexão com banco de dados
-[ERROR] ${new Date(Date.now() - 12*60*60*1000).toLocaleString('pt-BR')} - Falha no upload de arquivo para usuário ana.santos@email.com`
-    };
-
-    return conteudos[tipo] || `Relatório ${tipo} não encontrado.`;
+  isSection(section: AdminSection): boolean {
+    return this.selectedSection === section;
   }
 }

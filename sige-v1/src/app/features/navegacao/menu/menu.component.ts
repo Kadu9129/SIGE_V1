@@ -1,13 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
-import { DadosService } from '../../../core/services/dados.service';
-
-interface Usuario {
-  nome: string;
-  email: string;
-  role: string;
-}
+import { Router } from '@angular/router';
+import { AlunosApiService } from '../../../core/services/alunos-api.service';
+import { ProfessoresApiService } from '../../../core/services/professores-api.service';
+import { DashboardApiService } from '../../../core/services/dashboard-api.service';
+import { AuthService, AuthUser } from '../../../core/services/auth.service';
 
 interface Estatisticas {
   totalAlunos: number;
@@ -16,21 +13,23 @@ interface Estatisticas {
   totalMatriculas: number;
 }
 
+interface QuickAction {
+	label: string;
+	icon: string;
+	route: string;
+	roles: string[];
+	description: string;
+}
+
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.css'
 })
 export class MenuComponent implements OnInit {
-  usuarioLogado: Usuario | null = null;
-  sidebarCollapsed = false;
-  menuAtivo = '';
-  conteudoAtivo = false;
-  tituloAtual = '';
-  iconeAtual = '';
-  mostrarBotaoNovo = false;
+  usuarioLogado: AuthUser | null = null;
   notificacoes = 3;
 
   estatisticas: Estatisticas = {
@@ -40,152 +39,82 @@ export class MenuComponent implements OnInit {
     totalMatriculas: 0
   };
 
+  private readonly quickActions: QuickAction[] = [
+	{ label: 'Cadastrar Aluno', icon: 'fas fa-user-plus', route: '/painel', roles: ['admin', 'diretor'], description: 'Adicionar novo estudante à base' },
+	{ label: 'Cadastrar Professor', icon: 'fas fa-user-tie', route: '/painel', roles: ['admin', 'diretor'], description: 'Registrar um docente' },
+	{ label: 'Ir para área do Professor', icon: 'fas fa-chalkboard-teacher', route: '/professor', roles: ['professor'], description: 'Acessar turmas e registros' },
+	{ label: 'Ir para área do Aluno', icon: 'fas fa-user-graduate', route: '/aluno', roles: ['aluno'], description: 'Visualizar boletim e frequência' },
+	{ label: 'Ir para área do Responsável', icon: 'fas fa-users', route: '/responsavel', roles: ['responsavel'], description: 'Acompanhar dependentes' }
+  ];
+
   constructor(
-    private router: Router,
-    private dadosService: DadosService
+    private authService: AuthService,
+    private alunosApi: AlunosApiService,
+    private professoresApi: ProfessoresApiService,
+    private dashboardApi: DashboardApiService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.verificarAutenticacao();
+    this.enforceAuth();
     this.carregarUsuario();
     this.carregarEstatisticas();
   }
 
-  verificarAutenticacao(): void {
-    const token = localStorage.getItem('sige_token');
-    if (!token) {
-      this.router.navigate(['/login']);
-      return;
-    }
+  carregarUsuario(): void {
+    this.usuarioLogado = this.authService.getCurrentUser();
   }
 
-  carregarUsuario(): void {
-    const userData = localStorage.getItem('sige_user');
-    if (userData) {
-      this.usuarioLogado = JSON.parse(userData);
-    }
+  get saudacao(): string {
+	const hora = new Date().getHours();
+	if (hora < 12) return 'Bom dia';
+	if (hora < 18) return 'Boa tarde';
+	return 'Boa noite';
+  }
+
+  get primeiroNome(): string {
+	return this.usuarioLogado?.nome?.split(' ')[0] ?? 'Usuário';
   }
 
   carregarEstatisticas(): void {
-    // Simular carregamento de estatísticas com dados do serviço
-    this.dadosService.getAlunos().subscribe({
-      next: (alunos) => {
-        this.estatisticas.totalAlunos = alunos.length;
+    // Carrega contagem de alunos via API paginada
+    this.alunosApi.list(1, 1).subscribe({
+      next: (resp) => {
+        this.estatisticas.totalAlunos = resp.data?.totalItems ?? 0;
       },
-      error: (error) => {
-        console.error('Erro ao carregar alunos:', error);
-        this.estatisticas.totalAlunos = 150; // Valor padrão
-      }
+      error: () => { this.estatisticas.totalAlunos = 0; }
     });
 
-    this.dadosService.getProfessores().subscribe({
-      next: (professores) => {
-        this.estatisticas.totalProfessores = professores.length;
+    // Carrega contagem de professores
+    this.professoresApi.list(1, 1).subscribe({
+      next: (resp) => {
+        this.estatisticas.totalProfessores = resp.data?.totalItems ?? 0;
       },
-      error: (error) => {
-        console.error('Erro ao carregar professores:', error);
-        this.estatisticas.totalProfessores = 25; // Valor padrão
-      }
+      error: () => { this.estatisticas.totalProfessores = 0; }
     });
 
-    this.dadosService.getTurmas().subscribe({
-      next: (turmas) => {
-        this.estatisticas.totalTurmas = turmas.length;
+    // Dashboard geral para turmas / matrículas (placeholder)
+    this.dashboardApi.geral().subscribe({
+      next: (geral) => {
+        this.estatisticas.totalTurmas = geral.totalTurmas;
+        this.estatisticas.totalMatriculas = geral.totalAlunos; // usar endpoint específico depois
       },
-      error: (error) => {
-        console.error('Erro ao carregar turmas:', error);
-        this.estatisticas.totalTurmas = 12; // Valor padrão
-      }
-    });
-
-    this.dadosService.getMatriculas().subscribe({
-      next: (matriculas) => {
-        this.estatisticas.totalMatriculas = matriculas.length;
-      },
-      error: (error) => {
-        console.error('Erro ao carregar matrículas:', error);
-        this.estatisticas.totalMatriculas = 145; // Valor padrão
-      }
+      error: () => {}
     });
   }
 
-  toggleSidebar(): void {
-    this.sidebarCollapsed = !this.sidebarCollapsed;
+  get acoesRapidas(): QuickAction[] {
+	const role = this.usuarioLogado?.role?.toLowerCase() ?? '';
+	return this.quickActions.filter(action => action.roles.includes(role));
   }
 
-  navegarPara(secao: string, event: Event | null): void {
-    if (event) {
-      event.preventDefault();
-    }
-
-    this.menuAtivo = secao;
-    this.conteudoAtivo = true;
-    
-    // Configurar o conteúdo baseado na seção
-    switch (secao) {
-      case 'dashboard':
-        this.tituloAtual = 'Dashboard';
-        this.iconeAtual = 'fas fa-tachometer-alt';
-        this.mostrarBotaoNovo = false;
-        break;
-      case 'alunos':
-        this.tituloAtual = 'Alunos';
-        this.iconeAtual = 'fas fa-graduation-cap';
-        this.mostrarBotaoNovo = true;
-        break;
-      case 'professores':
-        this.tituloAtual = 'Professores';
-        this.iconeAtual = 'fas fa-chalkboard-teacher';
-        this.mostrarBotaoNovo = true;
-        break;
-      case 'turmas':
-        this.tituloAtual = 'Turmas';
-        this.iconeAtual = 'fas fa-users';
-        this.mostrarBotaoNovo = true;
-        break;
-      case 'matriculas':
-        this.tituloAtual = 'Matrículas';
-        this.iconeAtual = 'fas fa-clipboard-list';
-        this.mostrarBotaoNovo = true;
-        break;
-      case 'financeiro':
-        this.tituloAtual = 'Financeiro';
-        this.iconeAtual = 'fas fa-dollar-sign';
-        this.mostrarBotaoNovo = false;
-        break;
-      case 'relatorios':
-        this.tituloAtual = 'Relatórios';
-        this.iconeAtual = 'fas fa-chart-bar';
-        this.mostrarBotaoNovo = false;
-        break;
-      case 'configuracoes':
-        this.tituloAtual = 'Configurações';
-        this.iconeAtual = 'fas fa-cogs';
-        this.mostrarBotaoNovo = false;
-        break;
-      default:
-        this.conteudoAtivo = false;
-        this.tituloAtual = 'Menu Principal';
-        this.menuAtivo = '';
-    }
+  navegar(route: string): void {
+	this.router.navigate([route]);
   }
 
-  logout(): void {
-    // Confirmar logout
-    if (confirm('Tem certeza que deseja sair do sistema?')) {
-      // Limpar dados do localStorage
-      localStorage.removeItem('sige_token');
-      localStorage.removeItem('sige_user');
-      
-      // Redirecionar para login
-      this.router.navigate(['/login']);
-    }
-  }
-
-  // Método para voltar ao dashboard principal
-  voltarAoDashboard(): void {
-    this.conteudoAtivo = false;
-    this.menuAtivo = '';
-    this.tituloAtual = '';
+  private enforceAuth(): void {
+	if (!this.authService.isLoggedIn()) {
+		this.authService.logout();
+	}
   }
 }

@@ -1,1 +1,264 @@
-/* Estilos de navegação */
+:host {
+	display: block;
+	min-height: 100vh;
+	background: #f4f6fb;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.shell {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.shell__header {
+	height: 64px;
+	padding: 0 24px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: linear-gradient(135deg, #2563eb, #1e3a8a);
+	color: #fff;
+	box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+.brand {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.brand__logo {
+	font-size: 1.3rem;
+	font-weight: 700;
+	letter-spacing: 1px;
+}
+
+.brand__subtitle {
+	font-size: 0.75rem;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.header__actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.icon-button {
+	position: relative;
+	width: 38px;
+	height: 38px;
+	border: none;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.15);
+	color: #fff;
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+	transition: background 0.2s ease;
+}
+
+.icon-button:hover {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+.icon-button.logout {
+	background: rgba(239, 68, 68, 0.15);
+	color: #fee2e2;
+}
+
+.icon-button.logout:hover {
+	background: rgba(239, 68, 68, 0.3);
+}
+
+.badge {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	background: #ef4444;
+	color: #fff;
+	border-radius: 999px;
+	padding: 0 6px;
+	font-size: 0.65rem;
+	font-weight: 600;
+}
+
+.user-chip {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 4px 10px;
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 999px;
+}
+
+.user-chip__avatar {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: #1d4ed8;
+	display: grid;
+	place-items: center;
+	font-weight: 600;
+}
+
+.user-chip__info {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.1;
+}
+
+.user-chip__name {
+	font-size: 0.9rem;
+}
+
+.user-chip__role {
+	font-size: 0.75rem;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.shell__body {
+	flex: 1;
+	display: flex;
+	min-height: 0;
+}
+
+.sidebar {
+	width: 260px;
+	background: #0f172a;
+	color: #e2e8f0;
+	padding: 24px 16px;
+	transition: width 0.25s ease;
+	display: flex;
+	flex-direction: column;
+	border-right: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.sidebar.collapsed {
+	width: 80px;
+}
+
+.sidebar__sections {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.sidebar__section {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.sidebar__title {
+	text-transform: uppercase;
+	font-size: 0.7rem;
+	letter-spacing: 1.5px;
+	color: #94a3b8;
+	margin: 0 0 4px;
+}
+
+.sidebar__link {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 12px;
+	border-radius: 10px;
+	color: #e2e8f0;
+	text-decoration: none;
+	font-size: 0.9rem;
+	transition: background 0.2s ease, color 0.2s ease;
+	width: 100%;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+}
+
+.sidebar__link:focus-visible {
+	outline: 2px solid #93c5fd;
+	outline-offset: 2px;
+}
+
+.sidebar__link i {
+	width: 18px;
+	text-align: center;
+}
+
+.sidebar__link:hover {
+	background: rgba(59, 130, 246, 0.15);
+	color: #bfdbfe;
+}
+
+.sidebar__link.active {
+	background: rgba(59, 130, 246, 0.25);
+	color: #fff;
+}
+
+.sidebar__link.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.soon {
+	margin-left: auto;
+	font-size: 0.7rem;
+	color: #facc15;
+}
+
+.sidebar__empty {
+	margin-top: auto;
+	padding: 16px;
+	font-size: 0.85rem;
+	text-align: center;
+	color: #94a3b8;
+}
+
+.content {
+	flex: 1;
+	padding: 24px;
+	background: #f4f6fb;
+	min-height: 0;
+	overflow-y: auto;
+}
+
+.content.full {
+	padding-left: 16px;
+}
+
+.content__wrapper {
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+	.shell__header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+		height: auto;
+		padding: 16px;
+	}
+
+	.shell__body {
+		flex-direction: column;
+	}
+
+	.sidebar {
+		width: 100%;
+		flex-direction: row;
+		overflow-x: auto;
+	}
+
+	.sidebar.collapsed {
+		width: 100%;
+	}
+
+	.sidebar__sections {
+		flex-direction: row;
+	}
+}

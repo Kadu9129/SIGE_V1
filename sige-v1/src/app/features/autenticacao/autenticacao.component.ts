@@ -1,13 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-
-interface LoginData {
-  email: string;
-  senha: string;
-  lembrarMe: boolean;
-}
+import { AuthService, LoginCredentials } from '../../core/services/auth.service';
+import { LoggerService } from '../../core/services/logger.service';
+import { UsuariosApiService, CreateUsuario } from '../../core/services/usuarios-api.service';
+import { Router } from '@angular/router';
 
 interface RecuperarData {
   email: string;
@@ -34,8 +32,7 @@ export class AutenticacaoComponent {
   carregando = false;
   mensagem = '';
   erro = false;
-
-  loginData: LoginData = {
+  loginData: LoginCredentials = {
     email: '',
     senha: '',
     lembrarMe: false
@@ -53,7 +50,7 @@ export class AutenticacaoComponent {
     tipo: ''
   };
 
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private usuariosApi: UsuariosApiService, private logger: LoggerService) {}
 
   selecionarTab(tab: string): void {
     this.tabAtiva = tab;
@@ -65,36 +62,38 @@ export class AutenticacaoComponent {
   }
 
   realizarLogin(): void {
+    if (!this.loginData.email || !this.loginData.senha) {
+      this.exibirMensagem('Preencha email e senha.', true);
+      return;
+    }
     this.carregando = true;
     this.limparMensagens();
-
-    // Simular chamada de API
-    setTimeout(() => {
-      if (this.loginData.email === 'admin@sige.edu.br' && this.loginData.senha === '123456') {
-        this.exibirMensagem('Login realizado com sucesso!', false);
-        
-        // Armazenar dados do usuário
-        if (this.loginData.lembrarMe) {
-          localStorage.setItem('sige_remember_user', this.loginData.email);
+    this.authService.login(this.loginData).subscribe({
+      next: (success) => {
+        this.carregando = false;
+        if (success) {
+          this.exibirMensagem('Login realizado com sucesso!', false);
+          setTimeout(() => {
+            const user = this.authService.getCurrentUser();
+            const role = (user?.role || '').toLowerCase().trim();
+            let destino = '/painel';
+            if (role === 'professor') destino = '/professor';
+            else if (role === 'aluno') destino = '/aluno';
+            else if (role === 'responsavel') destino = '/responsavel';
+            else destino = '/painel'; // admin/diretor ou desconhecido
+            this.logger.log('Redirect pós-login', { role, destino, user });
+            this.router.navigate([destino]);
+          }, 600);
+        } else {
+          this.exibirMensagem('Email ou senha incorretos.', true);
         }
-        
-        localStorage.setItem('sige_token', 'fake-jwt-token-' + Date.now());
-        localStorage.setItem('sige_user', JSON.stringify({
-          email: this.loginData.email,
-          nome: 'Administrador',
-          role: 'admin'
-        }));
-
-        // Redirecionar após 1.5 segundos
-        setTimeout(() => {
-          this.router.navigate(['/menu']);
-        }, 1500);
-      } else {
-        this.exibirMensagem('Email ou senha incorretos.', true);
+      },
+      error: () => {
+        this.carregando = false;
+        this.logger.error('Erro de comunicação no login');
+        this.exibirMensagem('Erro ao comunicar com o servidor.', true);
       }
-      
-      this.carregando = false;
-    }, 2000);
+    });
   }
 
   recuperarSenha(): void {
@@ -115,39 +114,54 @@ export class AutenticacaoComponent {
     this.carregando = true;
     this.limparMensagens();
 
-    // Validar senhas
+    if (!this.criarData.nome || !this.criarData.email || !this.criarData.tipo) {
+      this.exibirMensagem('Preencha nome, email e tipo.', true);
+      this.carregando = false;
+      return;
+    }
     if (this.criarData.senha !== this.criarData.confirmarSenha) {
       this.exibirMensagem('As senhas não coincidem.', true);
       this.carregando = false;
       return;
     }
-
     if (this.criarData.senha.length < 6) {
       this.exibirMensagem('A senha deve ter pelo menos 6 caracteres.', true);
       this.carregando = false;
       return;
     }
 
-    // Simular criação de conta
-    setTimeout(() => {
-      this.exibirMensagem('Conta criada com sucesso! Faça login para continuar.', false);
-      this.carregando = false;
-      
-      // Limpar formulário e mudar para aba de login
-      this.criarData = {
-        nome: '',
-        email: '',
-        senha: '',
-        confirmarSenha: '',
-        tipo: ''
-      };
-      
-      // Mudar para aba de login após 2 segundos
-      setTimeout(() => {
-        this.tabAtiva = 'login';
-        this.limparMensagens();
-      }, 2000);
-    }, 2000);
+    const payload: CreateUsuario = {
+      nome: this.criarData.nome,
+      email: this.criarData.email,
+      senha: this.criarData.senha,
+      tipoUsuario: this.mapTipoUsuario(this.criarData.tipo)
+    };
+
+    this.usuariosApi.create(payload).subscribe({
+      next: () => {
+        this.exibirMensagem('Conta criada com sucesso! Faça login para continuar.', false);
+        this.carregando = false;
+        this.criarData = { nome: '', email: '', senha: '', confirmarSenha: '', tipo: '' };
+        setTimeout(() => { this.tabAtiva = 'login'; this.limparMensagens(); }, 1500);
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'Falha ao criar usuário.';
+        this.exibirMensagem(msg, true);
+        this.carregando = false;
+      }
+    });
+  }
+
+  private mapTipoUsuario(tipo: string): string {
+    // Map valores simples do formulário para enum backend
+    const map: Record<string,string> = {
+      admin: 'Admin',
+      diretor: 'Diretor',
+      professor: 'Professor',
+      aluno: 'Aluno',
+      responsavel: 'Responsavel'
+    };
+    return map[tipo] || 'Aluno';
   }
 
   private exibirMensagem(mensagem: string, isErro: boolean): void {
@@ -166,16 +180,14 @@ export class AutenticacaoComponent {
   }
 
   ngOnInit(): void {
-    // Verificar se já está logado
-    const token = localStorage.getItem('sige_token');
-    if (token) {
-      this.router.navigate(['/menu']);
+    if (this.authService.isLoggedIn()) {
+      // Usuário autenticado, não precisa ver tela de login
+      // Poderíamos redirecionar para /menu aqui se quisermos
     }
 
-    // Verificar se existe usuário lembrado
-    const usuarioLembrado = localStorage.getItem('sige_remember_user');
-    if (usuarioLembrado) {
-      this.loginData.email = usuarioLembrado;
+    const remembered = this.authService.getRememberedUser();
+    if (remembered) {
+      this.loginData.email = remembered;
       this.loginData.lembrarMe = true;
     }
   }

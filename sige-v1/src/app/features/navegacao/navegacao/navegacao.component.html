@@ -1,1 +1,69 @@
-<!-- Template de navegação -->
+<div class="shell">
+	<header class="shell__header">
+		<div class="brand">
+			<div class="brand__logo">SIGE</div>
+			<div class="brand__subtitle">Sistema Integrado de Gestão Escolar</div>
+		</div>
+		<div class="header__actions">
+			<button class="icon-button" (click)="toggleSidebar()" title="Alternar menu lateral">
+				<i class="fas fa-bars"></i>
+			</button>
+			<div class="user-chip">
+				<div class="user-chip__avatar">{{ userInitials }}</div>
+				<div class="user-chip__info">
+					<span class="user-chip__name">{{ userName }}</span>
+					<span class="user-chip__role">{{ userRole }}</span>
+				</div>
+			</div>
+			<button class="icon-button logout" (click)="logout()" title="Sair">
+				<i class="fas fa-sign-out-alt"></i>
+			</button>
+		</div>
+	</header>
+
+	<div class="shell__body">
+		<aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+			<div class="sidebar__sections" *ngIf="visibleSections.length; else sidebarEmptyTpl">
+				<div class="sidebar__section" *ngFor="let section of visibleSections">
+					<p class="sidebar__title" *ngIf="!sidebarCollapsed">{{ section.title }}</p>
+					<ng-container *ngFor="let item of section.items">
+						<a
+							*ngIf="!item.sectionId; else sectionButton"
+							class="sidebar__link"
+							[routerLink]="item.route || '/'"
+							routerLinkActive="active"
+							[routerLinkActiveOptions]="{ exact: item.route === '/menu' }"
+							[attr.title]="sidebarCollapsed ? item.label : null"
+						>
+							<i [class]="item.icon"></i>
+							<span *ngIf="!sidebarCollapsed">{{ item.label }}</span>
+						</a>
+						<ng-template #sectionButton>
+							<button
+								type="button"
+								class="sidebar__link"
+								[attr.title]="sidebarCollapsed ? item.label : null"
+								[class.active]="isItemActive(item)"
+								(click)="onNavClick($event, item)"
+							>
+								<i [class]="item.icon"></i>
+								<span *ngIf="!sidebarCollapsed">{{ item.label }}</span>
+							</button>
+						</ng-template>
+					</ng-container>
+				</div>
+			</div>
+			<ng-template #sidebarEmptyTpl>
+				<div class="sidebar__empty">
+					<p>Nenhuma navegação disponível para este perfil.</p>
+				</div>
+			</ng-template>
+		</aside>
+
+		<main class="content" [class.full]="sidebarCollapsed">
+			<div class="content__wrapper">
+				<router-outlet></router-outlet>
+			</div>
+		</main>
+	</div>
+</div>
