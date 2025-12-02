@@ -116,9 +116,16 @@
       [turmas]="turmasSecretaria"
       [professores]="professoresDisponiveis"
       [alunosDisponiveis]="alunosDisponiveisTurma"
+      [cursos]="turmaCursosDisponiveis"
       [selecionada]="turmaSecretariaSelecionada"
+      [carregandoTurmas]="carregandoTurmas"
+      [carregandoCatalogos]="carregandoCatalogosTurma"
+      [salvando]="turmaOperacaoEmAndamento"
       (selecionarTurma)="selecionarTurmaSecretaria($event)"
       (criarTurma)="criarTurmaSecretaria($event)"
+      (atualizarTurma)="atualizarTurmaSecretaria($event)"
+      (excluirTurma)="excluirTurmaSecretaria($event)"
+      (alterarStatusTurma)="alterarStatusTurma($event)"
     ></app-painel-gestao-turmas>
 
     <app-painel-avisos-materiais
@@ -147,13 +154,6 @@
       [selecionado]="alunoAcademicoSelecionado"
       (selecionarAluno)="selecionarAlunoAcademico($event)"
     ></app-painel-lancamento-alunos>
-
-    <app-painel-dados-academicos
-      [visible]="isSection('dadosAcademicos')"
-      [alunos]="dadosAcademicosAlunos"
-      [selecionado]="alunoDadosSelecionado"
-      (selecionarAluno)="selecionarAlunoDados($event)"
-    ></app-painel-dados-academicos>
 
     <app-painel-eventos
       [visible]="isSection('eventos')"

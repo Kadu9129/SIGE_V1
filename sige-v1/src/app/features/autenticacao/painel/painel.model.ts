@@ -110,39 +110,62 @@ export interface LancamentoProfessorDisciplina {
   turmas: LancamentoProfessorTurma[];
 }
 
-export interface TurmaProfessor {
-  id: string;
+export type TurmaTurno = 'Matutino' | 'Vespertino' | 'Noturno' | 'Integral';
+export type TurmaStatus = 'Planejada' | 'Ativa' | 'Finalizada' | 'Cancelada';
+
+export interface TurmaCursoOption {
+  id: number;
   nome: string;
-  especialidade: string;
+  codigo: string;
+  nivel?: string;
+}
+
+export interface TurmaProfessor {
+  id: number;
+  nome: string;
+  especialidade?: string;
   disponibilidade?: string;
 }
 
 export interface TurmaAluno {
-  id: string;
+  id: number;
   nome: string;
-  serie: string;
+  serie?: string;
+  matricula?: string;
+  matriculaId?: number;
   responsavel?: string;
+  status?: string;
 }
 
 export interface TurmaCadastro {
-  id: string;
+  id: number;
+  codigo: string;
   nome: string;
-  etapa: string;
-  turno: 'Manhã' | 'Tarde' | 'Noite';
-  capacidade: number;
-  professor: TurmaProfessor;
+  anoLetivo: number;
+  serie?: string;
+  turno: TurmaTurno;
+  capacidadeMaxima: number;
+  cursoId: number;
+  cursoNome: string;
+  professorCoordenadorId?: number;
+  professor?: TurmaProfessor;
   alunos: TurmaAluno[];
-  status: 'ativo' | 'planejado';
+  status: TurmaStatus;
   sala?: string;
 }
 
 export interface TurmaCadastroPayload {
+  codigo: string;
   nome: string;
-  etapa: string;
-  turno: 'Manhã' | 'Tarde' | 'Noite';
-  capacidade: number;
-  professorId: string;
-  alunoIds: string[];
+  anoLetivo: number;
+  serie?: string;
+  turno: TurmaTurno;
+  capacidadeMaxima: number;
+  cursoId: number;
+  professorCoordenadorId?: number;
+  sala?: string;
+  status: TurmaStatus;
+  alunoIds: number[];
 }
 
 export interface BoletimDisciplina {

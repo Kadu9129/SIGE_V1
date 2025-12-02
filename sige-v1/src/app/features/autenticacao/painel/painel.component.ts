@@ -26,6 +26,8 @@ import {
   TurmaAluno,
   TurmaCadastro,
   TurmaCadastroPayload,
+  TurmaCursoOption,
+  TurmaStatus,
   TurmaProfessor
 } from './painel.model';
 import { PainelPreMatriculaComponent } from './components/pre-matricula/pre-matricula.component';
@@ -35,7 +37,7 @@ import { PainelLancamentoProfessorComponent } from './components/lancamento-prof
 import { PainelLancamentoAlunosComponent } from './components/lancamento-alunos/lancamento-alunos.component';
 import { PainelGestaoTurmasComponent } from './components/gestao-turmas/gestao-turmas.component';
 import { PainelAvisosMateriaisComponent } from './components/avisos-materiais/avisos-materiais.component';
-import { PainelDadosAcademicosComponent } from './components/dados-academicos/dados-academicos.component';
+import { TurmasApiService, TurmaApi, TurmaCatalogosApi } from '../../../core/services/turmas-api.service';
 
 @Component({
   selector: 'app-painel',
@@ -50,8 +52,7 @@ import { PainelDadosAcademicosComponent } from './components/dados-academicos/da
     PainelLancamentoProfessorComponent,
     PainelLancamentoAlunosComponent,
     PainelGestaoTurmasComponent,
-    PainelAvisosMateriaisComponent,
-    PainelDadosAcademicosComponent
+    PainelAvisosMateriaisComponent
   ],
   templateUrl: './painel.component.html',
   styleUrl: './painel.component.shell.css'
@@ -333,51 +334,13 @@ export class PainelComponent implements OnInit {
     concluida: 'success',
     cancelada: 'error'
   };
-  professoresDisponiveis: TurmaProfessor[] = [
-    { id: 'prof-mat', nome: 'Carla Mendes', especialidade: 'Matemática', disponibilidade: 'Manhã' },
-    { id: 'prof-por', nome: 'Renato Souza', especialidade: 'Língua Portuguesa', disponibilidade: 'Tarde' },
-    { id: 'prof-his', nome: 'Aline Figueiredo', especialidade: 'História', disponibilidade: 'Integral' }
-  ];
-  alunosDisponiveisTurma: TurmaAluno[] = [
-    { id: 'acad-001', nome: 'Marina Nascimento', serie: '9º Ano' },
-    { id: 'acad-002', nome: 'Pedro Henrique Alves', serie: '1º EM' },
-    { id: 'acad-003', nome: 'João Victor Paiva', serie: '9º Ano' },
-    { id: 'acad-004', nome: 'Sofia Andrade', serie: '9º Ano' },
-    { id: 'acad-005', nome: 'Igor Mendes', serie: '9º Ano' },
-    { id: 'acad-006', nome: 'Bruna Costa', serie: '1º EM' }
-  ];
-  turmasSecretaria: TurmaCadastro[] = [
-    {
-      id: 'TUR-901',
-      nome: '9º Ano A',
-      etapa: 'Fundamental II',
-      turno: 'Manhã',
-      capacidade: 32,
-      professor: { id: 'prof-mat', nome: 'Carla Mendes', especialidade: 'Matemática' },
-      alunos: [
-        { id: 'acad-001', nome: 'Marina Nascimento', serie: '9º Ano' },
-        { id: 'acad-003', nome: 'João Victor Paiva', serie: '9º Ano' },
-        { id: 'acad-004', nome: 'Sofia Andrade', serie: '9º Ano' },
-        { id: 'acad-005', nome: 'Igor Mendes', serie: '9º Ano' }
-      ],
-      status: 'ativo',
-      sala: '201'
-    },
-    {
-      id: 'TUR-1EMA',
-      nome: '1º EM A',
-      etapa: 'Ensino Médio',
-      turno: 'Manhã',
-      capacidade: 28,
-      professor: { id: 'prof-por', nome: 'Renato Souza', especialidade: 'Língua Portuguesa' },
-      alunos: [
-        { id: 'acad-002', nome: 'Pedro Henrique Alves', serie: '1º EM' },
-        { id: 'acad-006', nome: 'Bruna Costa', serie: '1º EM' }
-      ],
-      status: 'planejado',
-      sala: '301'
-    }
-  ];
+  professoresDisponiveis: TurmaProfessor[] = [];
+  alunosDisponiveisTurma: TurmaAluno[] = [];
+  turmasSecretaria: TurmaCadastro[] = [];
+  turmaCursosDisponiveis: TurmaCursoOption[] = [];
+  carregandoTurmas = false;
+  carregandoCatalogosTurma = false;
+  turmaOperacaoEmAndamento = false;
   turmaSecretariaSelecionada: TurmaCadastro | null = null;
   avisosMateriais: AvisoMaterial[] = [
     {
@@ -636,7 +599,8 @@ export class PainelComponent implements OnInit {
     private dashService: DashboardApiService,
     private usuariosApi: UsuariosApiService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private turmasApi: TurmasApiService
   ) {}
 
   ngOnInit(): void {
@@ -659,6 +623,8 @@ export class PainelComponent implements OnInit {
     this.alunoAcademicoSelecionado = this.academicoAlunos[0] ?? null;
     this.alunoDadosSelecionado = this.dadosAcademicosAlunos[0] ?? null;
     this.recalcularPendencias();
+    this.carregarTurmaCatalogos();
+    this.carregarTurmas();
   }
 
   carregarDashboard(): void {
@@ -899,34 +865,93 @@ export class PainelComponent implements OnInit {
     alert('Solicitação cancelada e movida para o histórico.');
   }
 
-  selecionarTurmaSecretaria(id: string): void {
-    this.turmaSecretariaSelecionada = this.turmasSecretaria.find(turma => turma.id === id) ?? null;
+  selecionarTurmaSecretaria(id: number): void {
+    this.turmaSecretariaSelecionada = this.turmasSecretaria.find(turma => turma.id === id) ?? this.turmasSecretaria[0] ?? null;
   }
 
   criarTurmaSecretaria(payload: TurmaCadastroPayload): void {
-    const professor = this.professoresDisponiveis.find(item => item.id === payload.professorId);
-    if (!professor) {
-      alert('Selecione um professor válido antes de salvar.');
+    this.turmaOperacaoEmAndamento = true;
+    this.turmasApi.create(payload).subscribe({
+      next: turma => {
+        if (!turma) {
+          alert('Não foi possível criar a turma. Tente novamente.');
+          return;
+        }
+        const novaTurma = this.mapTurmaFromApi(turma);
+        this.upsertTurma(novaTurma);
+        this.turmaSecretariaSelecionada = novaTurma;
+      },
+      error: () => {
+        alert('Erro ao criar turma. Verifique os dados e tente novamente.');
+        this.turmaOperacaoEmAndamento = false;
+      },
+      complete: () => this.turmaOperacaoEmAndamento = false
+    });
+  }
+
+  atualizarTurmaSecretaria(evento: { id: number; payload: TurmaCadastroPayload }): void {
+    this.turmaOperacaoEmAndamento = true;
+    this.turmasApi.update(evento.id, evento.payload).subscribe({
+      next: turma => {
+        if (!turma) {
+          alert('Não foi possível atualizar a turma.');
+          return;
+        }
+        const turmaAtualizada = this.mapTurmaFromApi(turma);
+        this.upsertTurma(turmaAtualizada);
+        this.turmaSecretariaSelecionada = turmaAtualizada;
+      },
+      error: () => {
+        alert('Erro ao atualizar turma. Tente novamente.');
+        this.turmaOperacaoEmAndamento = false;
+      },
+      complete: () => this.turmaOperacaoEmAndamento = false
+    });
+  }
+
+  excluirTurmaSecretaria(id: number): void {
+    if (!confirm('Tem certeza que deseja remover esta turma? Esta ação não pode ser desfeita.')) {
       return;
     }
+    this.turmaOperacaoEmAndamento = true;
+    this.turmasApi.delete(id).subscribe({
+      next: sucesso => {
+        if (!sucesso) {
+          alert('Não foi possível excluir a turma.');
+          return;
+        }
+        this.turmasSecretaria = this.turmasSecretaria.filter(turma => turma.id !== id);
+        if (this.turmaSecretariaSelecionada?.id === id) {
+          this.turmaSecretariaSelecionada = this.turmasSecretaria[0] ?? null;
+        }
+      },
+      error: () => {
+        alert('Erro ao excluir turma. Verifique se há vínculos ativos e tente novamente.');
+        this.turmaOperacaoEmAndamento = false;
+      },
+      complete: () => this.turmaOperacaoEmAndamento = false
+    });
+  }
 
-    const alunosSelecionados = this.alunosDisponiveisTurma.filter(aluno => payload.alunoIds.includes(aluno.id));
-    const novoId = `TUR-${this.turmasSecretaria.length + 902}`;
-    const novaTurma: TurmaCadastro = {
-      id: novoId,
-      nome: payload.nome.trim(),
-      etapa: payload.etapa.trim(),
-      turno: payload.turno,
-      capacidade: payload.capacidade,
-      professor,
-      alunos: alunosSelecionados,
-      status: alunosSelecionados.length ? 'ativo' : 'planejado',
-      sala: 'A definir'
-    };
-
-    this.turmasSecretaria = [novaTurma, ...this.turmasSecretaria];
-    this.turmaSecretariaSelecionada = novaTurma;
-    alert('Turma criada com sucesso!');
+  alterarStatusTurma(evento: { id: number; status: TurmaStatus }): void {
+    this.turmaOperacaoEmAndamento = true;
+    this.turmasApi.changeStatus(evento.id, evento.status).subscribe({
+      next: sucesso => {
+        if (!sucesso) {
+          alert('Não foi possível atualizar o status da turma.');
+          return;
+        }
+        this.turmasSecretaria = this.turmasSecretaria.map(turma => turma.id === evento.id ? { ...turma, status: evento.status } : turma);
+        if (this.turmaSecretariaSelecionada?.id === evento.id) {
+          this.turmaSecretariaSelecionada = { ...this.turmaSecretariaSelecionada, status: evento.status };
+        }
+      },
+      error: () => {
+        alert('Erro ao atualizar status da turma.');
+        this.turmaOperacaoEmAndamento = false;
+      },
+      complete: () => this.turmaOperacaoEmAndamento = false
+    });
   }
 
   salvarAvisoMaterial(payload: AvisoMaterialPayload): void {
@@ -1016,6 +1041,91 @@ export class PainelComponent implements OnInit {
       const pendentes = turma.alunos.filter(aluno => aluno.nota == null || !aluno.frequencia).length;
       return acc + pendentes;
     }, 0);
+  }
+
+  private carregarTurmaCatalogos(): void {
+    this.carregandoCatalogosTurma = true;
+    this.turmasApi.catalogos().subscribe({
+      next: catalogos => this.aplicarCatalogosTurma(catalogos),
+      error: () => {
+        this.carregandoCatalogosTurma = false;
+      },
+      complete: () => this.carregandoCatalogosTurma = false
+    });
+  }
+
+  private aplicarCatalogosTurma(catalogos: TurmaCatalogosApi): void {
+    this.turmaCursosDisponiveis = catalogos.cursos.map(curso => ({
+      id: curso.id,
+      nome: curso.nome,
+      codigo: curso.codigo,
+      nivel: curso.nivel
+    }));
+    this.professoresDisponiveis = catalogos.professores.map(prof => ({
+      id: prof.id,
+      nome: prof.nome,
+      especialidade: prof.especialidade
+    }));
+    this.alunosDisponiveisTurma = catalogos.alunos.map(aluno => ({
+      id: aluno.id,
+      nome: aluno.nome,
+      serie: aluno.serie,
+      matricula: aluno.matricula
+    }));
+  }
+
+  private carregarTurmas(selectId?: number): void {
+    this.carregandoTurmas = true;
+    this.turmasApi.list({ pageSize: 50 }).subscribe({
+      next: lista => {
+        this.turmasSecretaria = lista.map(turma => this.mapTurmaFromApi(turma));
+        const alvo = selectId ?? this.turmaSecretariaSelecionada?.id;
+        this.turmaSecretariaSelecionada = alvo
+          ? this.turmasSecretaria.find(turma => turma.id === alvo) ?? this.turmasSecretaria[0] ?? null
+          : this.turmasSecretaria[0] ?? null;
+      },
+      error: () => {
+        this.carregandoTurmas = false;
+      },
+      complete: () => this.carregandoTurmas = false
+    });
+  }
+
+  private mapTurmaFromApi(turma: TurmaApi): TurmaCadastro {
+    return {
+      id: turma.id,
+      codigo: turma.codigo,
+      nome: turma.nome,
+      anoLetivo: turma.anoLetivo,
+      serie: turma.serie,
+      turno: turma.turno,
+      capacidadeMaxima: turma.capacidadeMaxima,
+      cursoId: turma.cursoId,
+      cursoNome: turma.nomeCurso,
+      professorCoordenadorId: turma.professorCoordenadorId,
+      professor: turma.professorCoordenadorId
+        ? {
+            id: turma.professorCoordenadorId,
+            nome: turma.nomeProfessorCoordenador ?? 'Professor não informado'
+          }
+        : undefined,
+      alunos: (turma.alunos ?? []).map(aluno => ({
+        id: aluno.alunoId,
+        nome: aluno.nomeAluno,
+        matricula: aluno.numeroMatricula,
+        status: aluno.status,
+        matriculaId: aluno.matriculaId
+      })),
+      status: turma.status,
+      sala: turma.sala ?? undefined
+    };
+  }
+
+  private upsertTurma(turma: TurmaCadastro): void {
+    const existe = this.turmasSecretaria.some(item => item.id === turma.id);
+    this.turmasSecretaria = existe
+      ? this.turmasSecretaria.map(item => (item.id === turma.id ? turma : item))
+      : [turma, ...this.turmasSecretaria];
   }
 
   handleSalvarEvento(payload: EventoPayload): void {

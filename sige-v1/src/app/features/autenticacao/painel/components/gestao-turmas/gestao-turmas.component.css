@@ -71,6 +71,12 @@
   color: #64748b;
 }
 
+.turma-item small.curso {
+  font-size: 0.75rem;
+  margin-top: 4px;
+  color: #334155;
+}
+
 .turma-item.active {
   border-color: #4c7dff;
   background: #eef3ff;
@@ -80,6 +86,18 @@
   text-align: right;
   font-size: 0.85rem;
   color: #475569;
+}
+
+.turmas-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  padding: 16px 0;
+}
+
+.turmas-loading i {
+  color: #4c7dff;
 }
 
 .status {
@@ -93,9 +111,24 @@
   font-weight: 600;
 }
 
-.status.planejado {
+.status.planejada {
   background: rgba(249, 115, 22, 0.15);
   color: #7c2d12;
+}
+
+.status.ativa {
+  background: rgba(34, 197, 94, 0.2);
+  color: #166534;
+}
+
+.status.finalizada {
+  background: rgba(59, 130, 246, 0.18);
+  color: #1d4ed8;
+}
+
+.status.cancelada {
+  background: rgba(248, 113, 113, 0.2);
+  color: #7f1d1d;
 }
 
 .turma-detalhe header {
@@ -132,8 +165,70 @@
 .turma-professor {
   margin-top: 18px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
+}
+.turma-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-text,
+.btn-ghost {
+  border: none;
+  background: none;
+  color: #1d4ed8;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.btn-ghost.danger {
+  color: #b91c1c;
+}
+
+.status-switcher {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.status-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.status-buttons button {
+  border-radius: 999px;
+  border: 1px solid #cbd5f5;
+  padding: 6px 14px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.status-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.turmas-empty {
+  padding: 32px;
+  text-align: center;
+  color: #475569;
+}
+
+.helper-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 4px 0 0;
 }
 
 .turma-professor span {
@@ -202,6 +297,14 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.turma-form header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
 }
 
 label {

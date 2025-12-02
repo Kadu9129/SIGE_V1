@@ -2,8 +2,12 @@
   <header class="section-header">
     <div>
       <h2>Gestão de turmas</h2>
-      <p>Crie turmas, atribua professores e organize a lista de alunos vinculados.</p>
+      <p>Controle completo do ciclo de vida das turmas, professores e matrículas.</p>
     </div>
+    <button type="button" class="btn-text" (click)="startCreate()" *ngIf="formMode === 'edit'">
+      <i class="fas fa-plus-circle"></i>
+      Nova turma
+    </button>
   </header>
 
   <div class="turmas-layout">
@@ -12,27 +16,31 @@
         <header>
           <div>
             <h3>Turmas cadastradas</h3>
-            <p>Selecione para visualizar os detalhes.</p>
+            <p>Selecione uma turma para ver detalhes ou atualizar o status.</p>
           </div>
-          <span class="tag">{{ turmas.length }} turmas</span>
+          <span class="tag">{{ turmas.length }} registros</span>
         </header>
-        <div class="turmas-scroll">
+
+        <div class="turmas-loading" *ngIf="carregandoTurmas">
+          <i class="fas fa-circle-notch fa-spin"></i>
+          <span>Carregando turmas cadastradas...</span>
+        </div>
+        <div class="turmas-scroll" *ngIf="!carregandoTurmas && turmas.length; else turmasVazias">
           <button
             type="button"
             class="turma-item"
-            *ngFor="let turma of turmas"
+            *ngFor="let turma of turmas; trackBy: trackByTurma"
             [class.active]="selecionada?.id === turma.id"
             (click)="selectTurma(turma.id)"
           >
             <div>
               <strong>{{ turma.nome }}</strong>
-              <small>{{ turma.etapa }} • {{ turma.turno }}</small>
+              <small>{{ turma.codigo }} • {{ turma.turno }} • {{ turma.anoLetivo }}</small>
+              <small class="curso">{{ turma.cursoNome }}</small>
             </div>
             <div class="turma-meta">
-              <span>{{ turma.alunos.length }}/{{ turma.capacidade }} alunos</span>
-              <span class="status" [class.planejado]="turma.status === 'planejado'">
-                {{ turma.status === 'ativo' ? 'Ativa' : 'Planejada' }}
-              </span>
+              <span>{{ turma.alunos.length }}/{{ turma.capacidadeMaxima }} alunos</span>
+              <span [class]="statusClasses[turma.status]">{{ statusLabels[turma.status] }}</span>
             </div>
           </button>
         </div>
@@ -42,35 +50,63 @@
         <header>
           <div>
             <h3>{{ turma.nome }}</h3>
-            <p>{{ turma.etapa }} • {{ turma.turno }}</p>
+            <p>{{ turma.codigo }} • {{ turma.turno }} • {{ turma.anoLetivo }}</p>
           </div>
           <div class="turma-tags">
-            <span class="tag">Professor: {{ turma.professor.nome }}</span>
-            <span class="tag light">Capacidade {{ turma.capacidade }}</span>
+            <span class="tag">{{ turma.cursoNome }}</span>
+            <span class="tag light">Capacidade: {{ turma.capacidadeMaxima }}</span>
+            <span class="tag" [class]="statusClasses[turma.status]">{{ statusLabels[turma.status] }}</span>
           </div>
         </header>
 
         <div class="turma-professor">
           <div>
-            <span>Professor responsável</span>
-            <strong>{{ turma.professor.nome }}</strong>
-            <small>{{ turma.professor.especialidade }}</small>
+            <span>Professor coordenador</span>
+            <strong>{{ turma.professor?.nome ?? 'Não atribuído' }}</strong>
+            <small>{{ turma.professor?.especialidade ?? 'Selecione um professor no formulário' }}</small>
           </div>
           <div>
-            <span>Sala</span>
-            <strong>{{ turma.sala || 'A definir' }}</strong>
-            <small>Status: {{ turma.status === 'ativo' ? 'Ativa' : 'Planejada' }}</small>
+            <span>Sala e status</span>
+            <strong>{{ turma.sala ?? 'A definir' }}</strong>
+            <small>Status atual: {{ statusLabels[turma.status] }}</small>
+          </div>
+          <div>
+            <span>Opções</span>
+            <div class="turma-actions">
+              <button type="button" class="btn-ghost" (click)="startEdit(turma)">
+                <i class="fas fa-pen"></i>
+                Editar
+              </button>
+              <button type="button" class="btn-ghost danger" (click)="deleteTurma()" [disabled]="salvando">
+                <i class="fas fa-trash"></i>
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-switcher">
+          <span>Alterar status</span>
+          <div class="status-buttons">
+            <button
+              type="button"
+              *ngFor="let status of statusOptions"
+              [disabled]="status === turma.status || salvando"
+              (click)="changeStatus(status)"
+            >
+              {{ statusLabels[status] }}
+            </button>
           </div>
         </div>
 
         <div class="alunos-grid">
-          <h4>Alunos matriculados ({{ turma.alunos.length }})</h4>
+          <h4>Alunos vinculados ({{ turma.alunos.length }})</h4>
           <ul>
             <li *ngFor="let aluno of turma.alunos">
               <div class="avatar-mini">{{ aluno.nome.charAt(0) }}</div>
               <div>
                 <strong>{{ aluno.nome }}</strong>
-                <small>{{ aluno.serie }}</small>
+                <small>{{ aluno.matricula ?? aluno.serie ?? 'Sem matrícula' }}</small>
               </div>
             </li>
           </ul>
@@ -87,48 +123,93 @@
     </div>
 
     <article class="turma-form">
-      <h3>Criar nova turma</h3>
-      <form (ngSubmit)="submit()" autocomplete="off">
-        <label>
-          <span>Nome da turma</span>
-          <input type="text" name="nome" [(ngModel)]="form.nome" placeholder="Ex.: 7º ano B" required>
-        </label>
+      <header>
+        <div>
+          <h3>{{ formTitle }}</h3>
+          <p *ngIf="formMode === 'create'; else editando">Cadastre uma nova turma informando curso, professor e alunos.</p>
+          <ng-template #editando>
+            <p>Atualize os dados da turma selecionada. As alterações são aplicadas imediatamente.</p>
+          </ng-template>
+          <p class="helper-text" *ngIf="carregandoCatalogos">Carregando catálogos de cursos, professores e alunos.</p>
+        </div>
+        <button type="button" class="btn-ghost" *ngIf="formMode === 'edit'" (click)="startCreate()">
+          Cancelar edição
+        </button>
+      </header>
 
-        <label>
-          <span>Etapa/Série</span>
-          <input type="text" name="etapa" [(ngModel)]="form.etapa" placeholder="Fundamental II" required>
-        </label>
+      <form (ngSubmit)="submit()" autocomplete="off">
+        <div class="form-row">
+          <label>
+            <span>Código</span>
+            <input type="text" name="codigo" [(ngModel)]="form.codigo" placeholder="Ex.: TUR-1A" required>
+          </label>
+          <label>
+            <span>Nome</span>
+            <input type="text" name="nome" [(ngModel)]="form.nome" placeholder="Ex.: 1º Ano A" required>
+          </label>
+        </div>
 
         <div class="form-row">
           <label>
-            <span>Turno</span>
-            <select name="turno" [(ngModel)]="form.turno">
-              <option value="Manhã">Manhã</option>
-              <option value="Tarde">Tarde</option>
-              <option value="Noite">Noite</option>
+            <span>Ano letivo</span>
+            <input type="number" name="anoLetivo" [(ngModel)]="form.anoLetivo" min="2000" max="2099" required>
+          </label>
+          <label>
+            <span>Série/Etapa</span>
+            <input type="text" name="serie" [(ngModel)]="form.serie" placeholder="Ex.: Fundamental II">
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label>
+            <span>Curso</span>
+            <select name="curso" [(ngModel)]="form.cursoId" required>
+              <option value="" disabled>Selecione o curso</option>
+              <option *ngFor="let curso of cursos" [value]="curso.id">
+                {{ curso.nome }}
+              </option>
             </select>
           </label>
-
           <label>
-            <span>Capacidade</span>
-            <input type="number" min="10" max="50" name="capacidade" [(ngModel)]="form.capacidade">
+            <span>Turno</span>
+            <select name="turno" [(ngModel)]="form.turno">
+              <option *ngFor="let turno of turnos" [value]="turno">{{ turno }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label>
+            <span>Capacidade máxima</span>
+            <input type="number" name="capacidade" [(ngModel)]="form.capacidadeMaxima" min="10" max="60" required>
+          </label>
+          <label>
+            <span>Status</span>
+            <select name="status" [(ngModel)]="form.status">
+              <option *ngFor="let status of statusOptions" [value]="status">{{ statusLabels[status] }}</option>
+            </select>
           </label>
         </div>
 
         <label>
-          <span>Professor responsável</span>
-          <select name="professor" [(ngModel)]="form.professorId" required>
-            <option value="" disabled>Selecione o professor</option>
-            <option *ngFor="let prof of professores" [value]="prof.id">
-              {{ prof.nome }} • {{ prof.especialidade }}
+          <span>Professor coordenador</span>
+          <select name="professor" [(ngModel)]="form.professorCoordenadorId">
+            <option [ngValue]="undefined">Sem professor atribuído</option>
+            <option *ngFor="let prof of professores" [ngValue]="prof.id">
+              {{ prof.nome }} • {{ prof.especialidade ?? 'Especialidade não informada' }}
             </option>
           </select>
+        </label>
+
+        <label>
+          <span>Sala</span>
+          <input type="text" name="sala" [(ngModel)]="form.sala" placeholder="Ex.: Sala 205">
         </label>
 
         <div class="alunos-selector">
           <div class="selector-header">
             <div>
-              <span>Alunos</span>
+              <span>Alunos vinculados</span>
               <p>Selecione os alunos que farão parte da turma.</p>
             </div>
             <span class="tag">{{ form.alunoIds.length }} selecionados</span>
@@ -142,17 +223,23 @@
               >
               <div>
                 <strong>{{ aluno.nome }}</strong>
-                <small>{{ aluno.serie }}</small>
+                <small>{{ aluno.matricula ?? aluno.serie ?? 'Sem matrícula' }}</small>
               </div>
             </label>
           </div>
         </div>
 
-        <button type="submit" class="btn-primary" [disabled]="!isFormValido">
-          <i class="fas fa-plus"></i>
-          Criar turma
+        <button type="submit" class="btn-primary" [disabled]="!isFormValido || salvando">
+          <i class="fas" [class.fa-save]="formMode === 'edit'" [class.fa-plus]="formMode === 'create'"></i>
+          {{ submitLabel }}
         </button>
       </form>
     </article>
   </div>
+
+  <ng-template #turmasVazias>
+    <div class="turmas-empty" *ngIf="!carregandoTurmas">
+      <p>Nenhuma turma encontrada para os filtros atuais.</p>
+    </div>
+  </ng-template>
 </section>

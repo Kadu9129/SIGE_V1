@@ -44,8 +44,8 @@
             <label *ngFor="let turma of turmasDestino">
               <input
                 type="checkbox"
-                [checked]="form.turmasDestino?.includes(turma.id)"
-                (change)="toggleLista('turmasDestino', turma.id)"
+                [checked]="form.turmasDestino?.includes(turma.id.toString())"
+                (change)="toggleLista('turmasDestino', turma.id.toString())"
               >
               {{ turma.nome }} ({{ turma.turno }})
             </label>
@@ -58,8 +58,8 @@
             <label *ngFor="let aluno of alunosDestino">
               <input
                 type="checkbox"
-                [checked]="form.destinatarios?.includes(aluno.id)"
-                (change)="toggleLista('destinatarios', aluno.id)"
+                [checked]="form.destinatarios?.includes(aluno.id.toString())"
+                (change)="toggleLista('destinatarios', aluno.id.toString())"
               >
               {{ aluno.nome }} • {{ aluno.serie }}
             </label>
